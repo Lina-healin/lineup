@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4DX / ScreenX Programming Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #121218; --bg-raised: #1B1C24; --bg-row-alt: #16171E;
+    --line: #2C2D38; --text: #EFEDE7; --text-dim: #9A9AA6; --text-faint: #6C6C78;
+    --4dx: #E8492B; --sx: #3B7DD8; --tbd: #D8A73B; --warn: #D8A73B;
+  }
+  :root:not([data-theme="light"]) { color-scheme: dark; }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #F3F1EC; --bg-raised: #FFFFFF; --bg-row-alt: #F7F5F0;
+      --line: #E1DED4; --text: #1D1D22; --text-dim: #66666F; --text-faint: #96959C;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: 'IBM Plex Sans', -apple-system, 'Malgun Gothic', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Login gate ---------- */
+  #loginScreen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .login-card {
+    width: 100%; max-width: 340px;
+    background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px;
+    padding: 28px 24px;
+  }
+  .login-card h1 {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; margin: 0 0 4px;
+  }
+  .login-card h1 span.x4 { color: var(--4dx); }
+  .login-card h1 span.sx { color: var(--sx); }
+  .login-card p { color: var(--text-faint); font-size: 0.82rem; margin: 0 0 18px; }
+  .login-card input {
+    width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text);
+    padding: 10px 12px; border-radius: 7px; font-size: 0.95rem; margin-bottom: 10px; font-family: inherit;
+  }
+  .login-card button {
+    width: 100%; background: var(--text); color: var(--bg); border: none;
+    padding: 11px; border-radius: 7px; font-weight: 600; font-size: 0.92rem; cursor: pointer;
+  }
+  .login-error { color: var(--4dx); font-size: 0.8rem; margin: -4px 0 10px; display: none; }
+
+  /* ---------- Notice banner ---------- */
+  .notice {
+    background: color-mix(in srgb, var(--warn) 14%, var(--bg-raised));
+    border-bottom: 1px solid var(--warn);
+    padding: 10px 20px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .notice-inner { max-width: 900px; margin: 0 auto; }
+  .notice b { color: var(--warn); }
+
+  .hero { padding: 22px 20px 16px; background: var(--bg-raised); border-bottom: 1px solid var(--line); }
+  .hero-inner { max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .hero h1 {
+    font-family: 'Bebas Neue', 'IBM Plex Sans', sans-serif;
+    font-size: clamp(1.6rem, 6vw, 2.2rem); letter-spacing: 0.02em; margin: 0; line-height: 1;
+  }
+  .hero h1 span.x4 { color: var(--4dx); }
+  .hero h1 span.sx { color: var(--sx); }
+  .hero .who { font-size: 0.78rem; color: var(--text-faint); }
+
+  .controls { position: sticky; top: 0; z-index: 10; background: var(--bg-raised); border-bottom: 1px solid var(--line); padding: 12px 20px; }
+  .controls-inner { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+  input[type="search"] {
+    width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text);
+    padding: 11px 12px; border-radius: 8px; font-size: 1rem; font-family: inherit;
+  }
+  input[type="search"]:focus, select:focus { outline: 2px solid var(--sx); outline-offset: 1px; }
+  .row-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .venue-seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex: 1 1 auto; min-width: 200px; }
+  .venue-seg button {
+    flex: 1; padding: 9px 8px; background: transparent; border: none; color: var(--text-dim);
+    font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; border-right: 1px solid var(--line);
+  }
+  .venue-seg button:last-child { border-right: none; }
+  .venue-seg button.active[data-v="both"] { background: var(--text); color: var(--bg); }
+  .venue-seg button.active[data-v="4dx"] { background: var(--4dx); color: #fff; }
+  .venue-seg button.active[data-v="sx"] { background: var(--sx); color: #fff; }
+
+  select {
+    background: var(--bg); border: 1px solid var(--line); color: var(--text);
+    padding: 9px 10px; border-radius: 8px; font-size: 0.85rem; font-family: inherit; flex: 1 1 130px;
+  }
+  .tbd-toggle {
+    display: flex; align-items: center; gap: 7px; padding: 9px 12px; border: 1px dashed var(--tbd);
+    border-radius: 8px; font-size: 0.85rem; color: var(--tbd); cursor: pointer; user-select: none;
+    flex: 1 1 auto; white-space: nowrap;
+  }
+  .tbd-toggle input { accent-color: var(--tbd); }
+
+  main { max-width: 900px; margin: 0 auto; padding: 16px 20px 40px; }
+  .month-group { margin-top: 22px; }
+  .month-heading {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; letter-spacing: 0.08em;
+    color: var(--text-faint); padding-bottom: 8px; border-bottom: 1px solid var(--line); margin-bottom: 2px;
+  }
+  .row { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+  .row:nth-child(even) { background: var(--bg-row-alt); }
+  .row.tbd-row { opacity: 0.72; }
+  .cell-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--text-dim); white-space: nowrap; }
+  .cell-title { min-width: 0; }
+  .cell-title .t { font-size: 0.96rem; font-weight: 600; line-height: 1.3; }
+  .cell-title .meta { margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .tag { font-size: 0.68rem; padding: 2px 7px; border-radius: 4px; color: var(--text-dim); border: 1px solid var(--line); white-space: nowrap; }
+  .tag.origin-Hollywood { color: #C9A34E; border-color: #4a3d24; }
+  .tag.origin-Japan { color: #D8687A; border-color: #4a2732; }
+  .tag.origin-Korea { color: #6FA8DC; border-color: #23374f; }
+  .tag.origin-China { color: #D8785A; border-color: #4a2d1f; }
+  .tag.origin-SEA { color: #6FBF8B; border-color: #244a35; }
+  .tag.origin-India { color: #C98BD8; border-color: #3d2a4a; }
+  .tag.origin-Europe { color: #8FA6C9; border-color: #26344a; }
+  .tag.origin-Global { color: #D8C86F; border-color: #4a4324; }
+  .tag.flat { font-style: italic; }
+  .badge-pair { display: flex; gap: 5px; justify-self: end; }
+  .badge { font-size: 0.7rem; font-weight: 600; padding: 5px 8px; border-radius: 5px; text-align: center; min-width: 46px; }
+  .badge.b-4dx { background: var(--4dx); color: #fff; }
+  .badge.b-sx { background: var(--sx); color: #fff; }
+  .badge.b-tbd { background: transparent; border: 1px dashed var(--tbd); color: var(--tbd); }
+  .empty-state { text-align: center; padding: 60px 16px; color: var(--text-faint); font-size: 0.92rem; }
+
+  /* ---------- Request form ---------- */
+  .request-block { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+  .request-toggle {
+    background: none; border: 1px dashed var(--line); color: var(--text-dim);
+    padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; width: 100%;
+    text-align: left; font-family: inherit;
+  }
+  .request-form {
+    display: none; margin-top: 10px; background: var(--bg-raised); border: 1px solid var(--line);
+    border-radius: 8px; padding: 16px;
+  }
+  .request-form.open { display: block; }
+  .request-form label { display: block; font-size: 0.78rem; color: var(--text-faint); margin: 10px 0 4px; }
+  .request-form input, .request-form textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text);
+    padding: 9px 10px; border-radius: 6px; font-size: 0.9rem; font-family: inherit; resize: vertical;
+  }
+  .request-form input[disabled] { color: var(--text-faint); }
+  .request-form button {
+    margin-top: 14px; background: var(--sx); color: #fff; border: none; padding: 10px 16px;
+    border-radius: 7px; font-weight: 600; font-size: 0.88rem; cursor: pointer;
+  }
+
+  @media (max-width: 560px) {
+    .hero { padding: 18px 16px 14px; }
+    .row { grid-template-columns: 1fr auto; }
+    .cell-date { display: none; }
+    .cell-title .t::before {
+      content: attr(data-date) " · "; color: var(--text-faint);
+      font-family: 'IBM Plex Mono', monospace; font-weight: 400; font-size: 0.78rem;
+    }
+    .badge-pair { flex-direction: column; align-self: start; }
+    select { flex: 1 1 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <h1><span class="x4">4DX</span> / <span class="sx">ScreenX</span></h1>
+    <p>Enter the ID and password provided by CJ 4DPLEX to view your programming schedule.</p>
+    <div class="login-error" id="loginError">ID 또는 비밀번호가 올바르지 않습니다.</div>
+    <input type="text" id="loginId" placeholder="ID" autocomplete="username">
+    <input type="password" id="loginPw" placeholder="Password" autocomplete="current-password">
+    <button id="loginBtn">Log in</button>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+
+  <div class="notice">
+    <div class="notice-inner">
+      Information on this page <b>may not reflect the latest confirmed lineup.</b> Please check with your CJ 4DPLEX contact for the final confirmed lineup.<br>
+      Before announcing any 4DX/ScreenX release, <b>please confirm with the rights holder whether any embargo applies.</b> For Japanese titles in particular, prior confirmation is required without exception.
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <h1><span class="x4">4DX</span> / <span class="sx">ScreenX</span> Programming Tracker</h1>
+      <span class="who" id="whoLabel"></span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="controls-inner">
+      <input type="search" id="searchInput" placeholder="Search title or studio…" aria-label="Search titles">
+      <div class="row-controls">
+        <div class="venue-seg" role="group" aria-label="Format view">
+          <button data-v="both" class="active">Both</button>
+          <button data-v="4dx">4DX</button>
+          <button data-v="sx">ScreenX</button>
+        </div>
+      </div>
+      <div class="row-controls">
+        <select id="originFilter" aria-label="Filter by region"><option value="">All regions</option></select>
+        <select id="typeFilter" aria-label="Filter by type"><option value="">All types</option></select>
+        <label class="tbd-toggle">
+          <input type="checkbox" id="tbdToggle">
+          Show unconfirmed (TBD)
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <main id="main"></main>
+
+  <div class="request-block">
+    <button class="request-toggle" id="requestToggle">+ Request a title not on this list</button>
+    <div class="request-form" id="requestForm">
+      <label for="reqTheater">Theater / chain</label>
+      <input type="text" id="reqTheater" disabled>
+      <label for="reqTitle">Requested title</label>
+      <input type="text" id="reqTitle" placeholder="e.g. film name, studio if known">
+      <label for="reqNote">Why this title / expected demand</label>
+      <textarea id="reqNote" rows="3" placeholder="e.g. strong local fanbase, similar title performed well, etc."></textarea>
+      <button id="reqSend">Send request</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---- Credentials (soft access gate — see note to Lina) ----
+const CREDENTIALS = {
+  "mars-tr":        { pw: "Mars2026!",     label: "Mars (Turkey)" },
+  "cgv-id":         { pw: "Cgv2026!",      label: "CGV (Indonesia)" },
+  "gsc-my":         { pw: "Gsc2026!",      label: "GSC (Malaysia)" },
+  "majorcp-th":     { pw: "Major2026!",    label: "Major Cineplex (Thailand)" },
+  "sm-ph":          { pw: "Sm2026!",       label: "SM Cinema (Philippines)" },
+  "ayala-ph":       { pw: "Ayala2026!",    label: "Ayala Cinemas (Philippines)" },
+  "legend-kh":      { pw: "Legend2026!",   label: "Legend Cinema (Cambodia)" },
+  "sabay-kh":       { pw: "Sabay2026!",    label: "Sabay Cinema (Cambodia)" },
+  "prime-mn":       { pw: "Prime2026!",    label: "Prime Cineplex (Mongolia)" },
+  "chaplin-kz":     { pw: "Chaplin2026!",  label: "Chaplin Cinemas (Kazakhstan)" },
+  "cj4dplex":       { pw: "HQ2026!",       label: "CJ 4DPLEX HQ" }
+};
+
+const RAW = [
+["Onslaught","A24","USA","New Release",false,"Confirmed","N/A","2026-09-02"],
+["Cars (2006)","Disney","USA","Revival & Anniversary",false,"Confirmed","N/A","2026-09-04"],
+["Chiikawa: The Secret of Mermaid Island","TOHO","Japan","New Release",false,"Confirmed","Pass","2026-09-05"],
+["Obsession","Universal","USA","New Release",false,"Confirmed","N/A","2026-09-05"],
+["Raiders of the Lost Ark 45th Anniversary","Paramount","USA","Revival & Anniversary",false,"Confirmed","N/A","2026-09-09"],
+["Sardar 2","Others","India","New Release",false,"TBD","N/A","2026-09-10"],
+["My Tomorrow, Your Yesterday (我想留在你身边)","Others","China","New Release",false,"Confirmed","N/A","2026-09-12"],
+["Resident Evil (2026)","Sony","USA","New Release",false,"Confirmed","Confirmed","2026-09-16"],
+["Transformers (40th Anniversary)","Paramount","USA","Revival & Anniversary",false,"Confirmed","N/A","2026-09-16"],
+["Terbang","Astro Shaw","Malaysia","New Release",false,"Confirmed","N/A","2026-09-17"],
+["Cosmic Princess Kaguya!","Others","Japan","New Release",false,"Confirmed","Confirmed","2026-09-18"],
+["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",false,"Confirmed","N/A","2026-09-19"],
+["Avengers ENDGAME (2026 re-release)","Disney","USA","Revival & Anniversary",false,"Confirmed","Confirmed","2026-09-23"],
+["Forgotten Island","Universal","USA","New Release",false,"Confirmed","Confirmed","2026-09-23"],
+["Heart of the Beast","Others","USA","New Release",false,"Confirmed","N/A","2026-09-23"],
+["Trai Buon Nguoi (The Human Animal Camp)","Galaxy","Vietnam","New Release",false,"Confirmed","N/A","2026-09-24"],
+["No Go: The Child (死亡禁区实录)","Others","China","New Release",false,"Confirmed","N/A","2026-09-25"],
+["The Old Dog (老江湖)","Others","China","New Release",false,"Confirmed","Confirmed","2026-09-25"],
+["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",false,"Confirmed","N/A","2026-09-25"],
+["The Vvaan: Force of the Forrest","Others","India","New Release",false,"TBD","N/A","2026-09-25"],
+["Death Whisperer: Saming the Werebeast","M Studio","Thailand","New Release",false,"Confirmed","Confirmed","2026-09-30"],
+["Digger","WB","USA","New Release",false,"TBD","N/A","2026-09-30"],
+["Linkin Park: Unshatter","Trafalgar/4DPLEX","Global","Concert & Live Event",false,"Confirmed","Confirmed","2026-09-30"],
+["Reawaken Man: The Red (부활남)","Lotte","Korea","New Release",false,"Confirmed","Confirmed","2026-09-30"],
+["Verity","Sony","USA","New Release",false,"TBD","N/A","2026-09-30"],
+["Mr. & Mrs. Pardon (什么意思夫妇)","Maoyan","China","New Release",false,"Confirmed","N/A","2026-10-01"],
+["Traces of Justice (神探之痕迹)","Maoyan","China","New Release",false,"Confirmed","N/A","2026-10-01"],
+["Star Detective Precure!","TOEI","Japan","New Release",false,"Confirmed","N/A","2026-10-02"],
+["Puella Magi Madoka Magica the Movie -Walpurgisnacht Rising-","Aniplex","Japan","New Release",false,"Confirmed","N/A","2026-10-03"],
+["Other Mommy","Universal","USA","New Release",false,"Confirmed","Pass","2026-10-07"],
+["Wakas at Simula: The Trilogy Concert Finale","4DPLEX","Philippines","Concert & Live Event",false,"Confirmed","Confirmed","2026-10-07"],
+["Kuasa Gelap: Perjanjian Darah","Paragon Pictures","Indonesia","New Release",false,"Confirmed","N/A","2026-10-08"],
+["Dangerous Cops 1 (Revival)","TOEI","Japan","Revival & Anniversary",false,"Confirmed","N/A","2026-10-09"],
+["Girls und Panzer das Finale: Part 5","HAKUHODO DY Map","Japan","New Release",false,"Confirmed","N/A","2026-10-09"],
+["Bullet Train 2","TBD","Japan","New Release",false,"Confirmed","Confirmed","2026-10-14"],
+["Guardians of the Video Game (전자오락수호대)","CJ CGV","Korea","New Release",false,"Confirmed","Confirmed","2026-10-14"],
+["Street Fighter","Paramount","USA","New Release",false,"Confirmed","Confirmed","2026-10-14"],
+["Whalefall","Disney","USA","New Release",true,"Confirmed","TBD","2026-10-14"],
+["Jailer 2","Others","India","New Release",false,"TBD","N/A","2026-10-15"],
+["Nelly Rapp - Porten till underjorden","Others","Sweden","New Release",false,"TBD","N/A","2026-10-16"],
+["Clayface","WB","USA","New Release",false,"TBD","TBD","2026-10-21"],
+["Wildwood","Others","USA","New Release",false,"TBD","N/A","2026-10-21"],
+["Nakee 3: The Cursed War","M Studio","Thailand","New Release",false,"Confirmed","N/A","2026-10-22"],
+["Attack on Titan: Crimson Bow and Arrow (Revival)","Pony Canyon","Japan","Revival & Anniversary",false,"Confirmed","Confirmed","2026-10-23"],
+["Lovelive Bloom Garden Party","Bandai Namco","Japan","Concert & Live Event",false,"Confirmed","N/A","2026-10-23"],
+["ME MIN","Vietnam CGV","Vietnam","New Release",false,"Confirmed","TBD","2026-10-23"],
+["Wicker","Others","USA","New Release",false,"TBD","N/A","2026-10-23"],
+["Wife & Dog","Others","UK","New Release",false,"TBD","N/A","2026-10-23"],
+["The Cat in the Hat","WB","USA","New Release",true,"TBD","TBD","2026-11-04"],
+["The Last Bliss","M Studio","Thailand","New Release",false,"TBD","N/A","2026-11-05"],
+["Ramayana: Part 1","Others","India","New Release",false,"Confirmed","Confirmed","2026-11-06"],
+["How to Rob a Bank","Amazon MGM/Sony","USA","New Release",true,"Confirmed","TBD","2026-11-11"],
+["The Uninvited (손 없는 날)","CJ CGV","Korea","New Release",false,"TBD","TBD","2026-11-11"],
+["Expelled from Paradise: Resonance from the Heart","TOEI","Japan","New Release",false,"Confirmed","N/A","2026-11-13"],
+["Godzilla Minus Zero","TOHO","Japan","Revival & Anniversary",false,"Confirmed","Pass","2026-11-13"],
+["Canvas of Blood (몽유도원도)","PLUSM","Korea","New Release",false,"TBD","TBD","2026-11-18"],
+["The Hunger Games: Sunrise on the Reaping","Lionsgate","USA","New Release",false,"Confirmed","Confirmed","2026-11-18"],
+["Hexed","Disney","USA","New Release",true,"TBD","Pass","2026-11-23"],
+["Dangerous Cops 2 (Revival)","TOEI","Japan","Revival & Anniversary",false,"Confirmed","N/A","2026-11-27"],
+["Witch on the Holy Night","Aniplex","Japan","New Release",false,"Confirmed","Confirmed","2026-11-27"],
+["JSB 15th Anniversary Stadium Live \"JSB FOREVER ～ONE～\" THE MOVIE","TBD","Global","Concert & Live Event",false,"Confirmed","Confirmed","2026-11-27"],
+["Astérix: Le Royaume de Nubie","Others","France","New Release",false,"TBD","TBD","2026-12-02"],
+["Violent Night 2","Universal","USA","New Release",false,"Confirmed","N/A","2026-12-02"],
+["Chanmunda","Others","India","New Release",false,"TBD","N/A","2026-12-04"],
+["The Angry Birds Movie 3","Sony","USA","New Release",false,"TBD","N/A","2026-12-10"],
+["Dangerous Cops 3 (Revival)","TOEI","Japan","Revival & Anniversary",false,"Confirmed","N/A","2026-12-11"],
+["Jumanji: Open World","Sony","USA","New Release",false,"TBD","TBD","2026-12-11"],
+["Avengers: Doomsday","Disney","USA","New Release",false,"Confirmed","Confirmed","2026-12-16"],
+["Dune: Part Three","WB","USA","New Release",false,"TBD","N/A","2026-12-16"],
+["King","Others","India","New Release",false,"TBD","N/A","2026-12-24"],
+["Mahavatar","Others","India","New Release",false,"TBD","TBD","2026-12-25"]
+];
+
+const ORIGIN_TO_REGION = {
+  USA: "Hollywood", Japan: "Japan", Korea: "Korea", China: "China",
+  Thailand: "SEA", Malaysia: "SEA", Philippines: "SEA", Indonesia: "SEA", Vietnam: "SEA",
+  India: "India", Sweden: "Europe", France: "Europe", UK: "Europe", Global: "Global"
+};
+const REGION_LABEL = {
+  Hollywood: "Hollywood (USA)", Japan: "Japan", Korea: "Korea", China: "China",
+  SEA: "Southeast Asia", India: "India", Europe: "Europe", Global: "Global / Event"
+};
+
+const DATA = RAW.map(r => ({
+  title: r[0], studio: r[1], country: r[2],
+  region: ORIGIN_TO_REGION[r[2]] || "Other",
+  type: r[3], flat: r[4], fdx: r[5], sx: r[6], date: r[7]
+}));
+
+// ---- Login ----
+function attemptLogin() {
+  const id = document.getElementById('loginId').value.trim().toLowerCase();
+  const pw = document.getElementById('loginPw').value;
+  const entry = CREDENTIALS[id];
+  const err = document.getElementById('loginError');
+  if (entry && entry.pw === pw) {
+    sessionStorage.setItem('loggedInLabel', entry.label);
+    err.style.display = 'none';
+    showApp(entry.label);
+  } else {
+    err.style.display = 'block';
+  }
+}
+document.getElementById('loginBtn').addEventListener('click', attemptLogin);
+document.getElementById('loginPw').addEventListener('keydown', e => { if (e.key === 'Enter') attemptLogin(); });
+
+function showApp(label) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('whoLabel').textContent = label;
+  document.getElementById('reqTheater').value = label;
+  init();
+}
+
+const existing = sessionStorage.getItem('loggedInLabel');
+if (existing) showApp(existing);
+
+// ---- App ----
+function init() {
+  const MONTH_FMT = d => new Date(d + "T00:00:00").toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const DATE_FMT = d => new Date(d + "T00:00:00").toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  const originSel = document.getElementById('originFilter');
+  const counts = {};
+  DATA.forEach(d => { counts[d.region] = (counts[d.region] || 0) + 1; });
+  const regionsSorted = Object.keys(counts)
+    .filter(r => r !== 'Hollywood')
+    .sort((a, b) => counts[b] - counts[a]);
+  const orderedRegions = ['Hollywood', ...regionsSorted];
+  orderedRegions.forEach(r => {
+    const o = document.createElement('option'); o.value = r; o.textContent = REGION_LABEL[r] || r;
+    originSel.appendChild(o);
+  });
+
+  const typeSel = document.getElementById('typeFilter');
+  [...new Set(DATA.map(d => d.type))].forEach(t => {
+    const o = document.createElement('option'); o.value = t; o.textContent = t;
+    typeSel.appendChild(o);
+  });
+
+  const regionClassMap = { Hollywood: "origin-Hollywood", Japan: "origin-Japan", Korea: "origin-Korea", China: "origin-China", SEA: "origin-SEA", India: "origin-India", Europe: "origin-Europe", Global: "origin-Global" };
+
+  let venue = 'both';
+  document.querySelectorAll('.venue-seg button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      venue = btn.dataset.v;
+      document.querySelectorAll('.venue-seg button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    });
+  });
+
+  const applicable = s => s === 'Confirmed' || s === 'TBD';
+
+  function formatBadges(d) {
+    const parts = [];
+    if ((venue === 'both' || venue === '4dx') && applicable(d.fdx)) {
+      parts.push(`<span class="badge b-4dx${d.fdx === 'TBD' ? ' b-tbd' : ''}">4DX${d.fdx === 'TBD' ? ' TBD' : ''}</span>`);
+    }
+    if ((venue === 'both' || venue === 'sx') && applicable(d.sx)) {
+      parts.push(`<span class="badge b-sx${d.sx === 'TBD' ? ' b-tbd' : ''}">SX${d.sx === 'TBD' ? ' TBD' : ''}</span>`);
+    }
+    return parts.join('');
+  }
+
+  function render() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const region = originSel.value;
+    const type = typeSel.value;
+    const showTbd = document.getElementById('tbdToggle').checked;
+
+    let rows = DATA.filter(d => {
+      if (q && !(d.title.toLowerCase().includes(q) || d.studio.toLowerCase().includes(q))) return false;
+      if (region && d.region !== region) return false;
+      if (type && d.type !== type) return false;
+      if (venue === '4dx' && !applicable(d.fdx)) return false;
+      if (venue === 'sx' && !applicable(d.sx)) return false;
+      if (venue === 'both' && !applicable(d.fdx) && !applicable(d.sx)) return false;
+
+      const relevant = venue === '4dx' ? [d.fdx] : venue === 'sx' ? [d.sx] : [d.fdx, d.sx].filter(applicable);
+      if (!showTbd && relevant.every(s => s === 'TBD')) return false;
+      return true;
+    });
+
+    rows.sort((a, b) => a.date.localeCompare(b.date));
+
+    const main = document.getElementById('main');
+    main.innerHTML = "";
+
+    if (rows.length === 0) {
+      main.innerHTML = `<div class="empty-state">No titles match these filters. Try clearing the search or enabling "Show unconfirmed (TBD)".</div>`;
+      return;
+    }
+
+    let currentMonth = "";
+    let groupEl = null;
+    rows.forEach(d => {
+      const isTbdRow = (venue === 'both') ? (d.fdx === 'TBD' || d.sx === 'TBD') : (venue === '4dx' ? d.fdx === 'TBD' : d.sx === 'TBD');
+      const m = MONTH_FMT(d.date);
+      if (m !== currentMonth) {
+        currentMonth = m;
+        const group = document.createElement('div');
+        group.className = 'month-group';
+        group.innerHTML = `<div class="month-heading">${m.toUpperCase()}</div>`;
+        main.appendChild(group);
+        groupEl = group;
+      }
+      const row = document.createElement('div');
+      row.className = 'row' + (isTbdRow ? ' tbd-row' : '');
+      row.innerHTML = `
+        <div class="cell-date">${DATE_FMT(d.date)}</div>
+        <div class="cell-title">
+          <div class="t" data-date="${DATE_FMT(d.date)}">${d.title}</div>
+          <div class="meta">
+            <span class="tag ${regionClassMap[d.region] || ''}">${d.country}</span>
+            <span class="tag">${d.type}</span>
+            ${d.flat ? '<span class="tag flat">also releasing flat/2D</span>' : ''}
+          </div>
+        </div>
+        <div class="badge-pair">${formatBadges(d)}</div>
+      `;
+      groupEl.appendChild(row);
+    });
+  }
+
+  ['searchInput','originFilter','typeFilter','tbdToggle'].forEach(id => {
+    document.getElementById(id).addEventListener('input', render);
+    document.getElementById(id).addEventListener('change', render);
+  });
+
+  render();
+
+  // ---- Request form ----
+  const REQUEST_EMAIL = "REPLACE_WITH_LINA_EMAIL@example.com";
+  document.getElementById('requestToggle').addEventListener('click', () => {
+    document.getElementById('requestForm').classList.toggle('open');
+  });
+  document.getElementById('reqSend').addEventListener('click', () => {
+    const theater = document.getElementById('reqTheater').value;
+    const title = document.getElementById('reqTitle').value.trim();
+    const note = document.getElementById('reqNote').value.trim();
+    if (!title) { document.getElementById('reqTitle').focus(); return; }
+    const subject = encodeURIComponent(`[4DX/ScreenX Title Request] ${theater} — ${title}`);
+    const body = encodeURIComponent(`Theater: ${theater}\nRequested title: ${title}\nReason / expected demand: ${note || '-'}`);
+    window.location.href = `mailto:${REQUEST_EMAIL}?subject=${subject}&body=${body}`;
+  });
+}
+</script>
+</body>
+</html>
