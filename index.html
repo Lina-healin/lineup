@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>4DX / ScreenX Programming Tracker</title>
+<title>4DX / ScreenX Lineup Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
   :root {
     --bg: #121218; --bg-raised: #1B1C24; --bg-row-alt: #16171E;
     --line: #2C2D38; --text: #EFEDE7; --text-dim: #9A9AA6; --text-faint: #6C6C78;
-    --4dx: #E8492B; --sx: #3B7DD8; --tbd: #D8A73B; --warn: #D8A73B;
+    --4dx: #E8492B; --sx: #3B7DD8; --warn: #D8A73B;
   }
   :root:not([data-theme="light"]) { color-scheme: dark; }
   @media (prefers-color-scheme: light) {
@@ -98,6 +98,34 @@
     background: var(--bg); border: 1px solid var(--line); color: var(--text);
     padding: 9px 10px; border-radius: 8px; font-size: 0.85rem; font-family: inherit; flex: 1 1 130px;
   }
+
+  .multi-select { position: relative; flex: 1 1 130px; }
+  .multi-select-btn {
+    width: 100%; text-align: left; background: var(--bg); border: 1px solid var(--line); color: var(--text);
+    padding: 9px 10px; border-radius: 8px; font-size: 0.85rem; font-family: inherit; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+  }
+  .multi-select-btn::after { content: "▾"; color: var(--text-faint); font-size: 0.7rem; }
+  .multi-select-btn.has-selection { border-color: color-mix(in srgb, var(--sx) 55%, var(--line)); }
+  .multi-select-panel {
+    display: none; position: absolute; top: calc(100% + 6px); left: 0; z-index: 20;
+    min-width: 200px; max-height: 260px; overflow-y: auto;
+    background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px;
+    box-shadow: 0 14px 36px rgba(0,0,0,.22); padding: 6px;
+  }
+  .multi-select-panel.open { display: block; }
+  .multi-select-option {
+    display: flex; align-items: center; gap: 8px; padding: 8px 8px; border-radius: 6px;
+    font-size: 0.86rem; cursor: pointer; white-space: nowrap;
+  }
+  .multi-select-option:hover { background: color-mix(in srgb, var(--bg-raised) 80%, var(--sx) 6%); }
+  .multi-select-option input { accent-color: var(--sx); }
+  .multi-select-clear {
+    display: block; width: 100%; text-align: center; margin-top: 4px; padding: 7px;
+    border-top: 1px solid var(--line); background: none; border-left: none; border-right: none; border-bottom: none;
+    color: var(--text-faint); font-size: 0.78rem; cursor: pointer; font-family: inherit;
+  }
+
   .tbd-toggle {
     display: flex; align-items: center; gap: 7px; padding: 9px 12px; border: 1px dashed var(--tbd);
     border-radius: 8px; font-size: 0.85rem; color: var(--tbd); cursor: pointer; user-select: none;
@@ -113,7 +141,6 @@
   }
   .row { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line); }
   .row:nth-child(even) { background: var(--bg-row-alt); }
-  .row.tbd-row { opacity: 0.72; }
   .cell-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--text-dim); white-space: nowrap; }
   .cell-title { min-width: 0; }
   .cell-title .t { font-size: 0.96rem; font-weight: 600; line-height: 1.3; }
@@ -128,11 +155,21 @@
   .tag.origin-Europe { color: #8FA6C9; border-color: #26344a; }
   .tag.origin-Global { color: #D8C86F; border-color: #4a4324; }
   .tag.flat { font-style: italic; }
+  .title-note {
+    margin-top: 7px;
+    font-size: 0.76rem;
+    line-height: 1.45;
+    color: var(--text-dim);
+    padding: 6px 8px;
+    border-left: 2px solid var(--warn);
+    background: color-mix(in srgb, var(--warn) 7%, transparent);
+    border-radius: 0 5px 5px 0;
+  }
+  .title-note strong { color: var(--warn); font-weight: 600; }
   .badge-pair { display: flex; gap: 5px; justify-self: end; }
   .badge { font-size: 0.7rem; font-weight: 600; padding: 5px 8px; border-radius: 5px; text-align: center; min-width: 46px; }
   .badge.b-4dx { background: var(--4dx); color: #fff; }
   .badge.b-sx { background: var(--sx); color: #fff; }
-  .badge.b-tbd { background: transparent; border: 1px dashed var(--tbd); color: var(--tbd); }
   .empty-state { text-align: center; padding: 60px 16px; color: var(--text-faint); font-size: 0.92rem; }
 
   /* ---------- Request form ---------- */
@@ -169,6 +206,174 @@
     .badge-pair { flex-direction: column; align-self: start; }
     select { flex: 1 1 100%; }
   }
+
+  /* ---------- Visual refinement ---------- */
+  body {
+    background:
+      radial-gradient(circle at top left, color-mix(in srgb, var(--sx) 7%, transparent) 0, transparent 28%),
+      radial-gradient(circle at top right, color-mix(in srgb, var(--4dx) 6%, transparent) 0, transparent 26%),
+      var(--bg);
+  }
+
+  .login-card {
+    box-shadow: 0 18px 48px rgba(0,0,0,.16);
+    backdrop-filter: blur(10px);
+  }
+
+  .notice {
+    background: color-mix(in srgb, var(--warn) 9%, var(--bg-raised));
+    border-bottom: 1px solid color-mix(in srgb, var(--warn) 55%, var(--line));
+    padding: 14px 20px;
+  }
+
+  .notice-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    gap: 10px;
+  }
+
+  .notice-item {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 10px;
+    align-items: start;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    line-height: 1.55;
+  }
+
+  .notice-item strong { color: var(--text); font-weight: 600; }
+
+  .notice-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--warn) 65%, var(--line));
+    color: var(--warn);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .7rem;
+    font-weight: 700;
+    margin-top: 1px;
+  }
+
+  .hero {
+    padding: 26px 20px 18px;
+    background: color-mix(in srgb, var(--bg-raised) 94%, transparent);
+  }
+
+  .hero h1 { letter-spacing: .025em; }
+
+  .controls {
+    backdrop-filter: blur(14px);
+    background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
+  }
+
+  input[type="search"], select,
+  .request-form input, .request-form textarea {
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+
+  input[type="search"]:focus, select:focus,
+  .request-form input:focus, .request-form textarea:focus {
+    outline: none;
+    border-color: color-mix(in srgb, var(--sx) 75%, var(--line));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sx) 14%, transparent);
+  }
+
+  .row {
+    transition: background .16s ease, transform .16s ease;
+    border-radius: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .row:hover {
+    background: color-mix(in srgb, var(--bg-raised) 82%, var(--sx) 4%);
+  }
+
+  .request-block { padding-top: 8px; }
+
+  .request-toggle {
+    background: color-mix(in srgb, var(--bg-raised) 94%, transparent);
+    border-style: solid;
+    transition: border-color .18s ease, background .18s ease, transform .18s ease;
+  }
+
+  .request-toggle:hover {
+    border-color: color-mix(in srgb, var(--sx) 45%, var(--line));
+    background: color-mix(in srgb, var(--bg-raised) 90%, var(--sx) 5%);
+  }
+
+  .request-form {
+    box-shadow: 0 14px 36px rgba(0,0,0,.10);
+  }
+
+  .format-request-label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-faint);
+    margin: 10px 0 6px;
+  }
+
+  .format-request {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .format-choice {
+    position: relative;
+  }
+
+  .format-choice input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .format-choice span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 84px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    background: var(--bg);
+    font-size: .84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .16s ease;
+  }
+
+  .format-choice input:checked + span {
+    color: #fff;
+    border-color: transparent;
+  }
+
+  .format-choice.fdx input:checked + span { background: var(--4dx); }
+  .format-choice.sx input:checked + span { background: var(--sx); }
+
+  .send-status {
+    margin-top: 10px;
+    font-size: .8rem;
+    color: var(--text-dim);
+    min-height: 1.2em;
+  }
+
+  .send-status.ok { color: #6FBF8B; }
+  .send-status.err { color: var(--4dx); }
+
+  .request-form button[disabled] {
+    opacity: .55;
+    cursor: wait;
+  }
+
 </style>
 </head>
 <body>
@@ -176,7 +381,7 @@
 <div id="loginScreen">
   <div class="login-card">
     <h1><span class="x4">4DX</span> / <span class="sx">ScreenX</span></h1>
-    <p>Enter the ID and password provided by CJ 4DPLEX to view your programming schedule.</p>
+    <p>Enter the ID and password provided by CJ 4DPLEX to view the latest lineup.</p>
     <div class="login-error" id="loginError">ID 또는 비밀번호가 올바르지 않습니다.</div>
     <input type="text" id="loginId" placeholder="ID" autocomplete="username">
     <input type="password" id="loginPw" placeholder="Password" autocomplete="current-password">
@@ -188,14 +393,26 @@
 
   <div class="notice">
     <div class="notice-inner">
-      Information on this page <b>may not reflect the latest confirmed lineup.</b> Please check with your CJ 4DPLEX contact for the final confirmed lineup.<br>
-      Before announcing any 4DX/ScreenX release, <b>please confirm with the rights holder whether any embargo applies.</b> For Japanese titles in particular, prior confirmation is required without exception.
+      <div class="notice-item">
+        <span class="notice-icon">i</span>
+        <div>
+          <strong>This tracker shows the confirmed titles currently listed.</strong><br>
+          Some upcoming or early-release titles may not yet appear here. If you are looking for a title that is not listed, please check with your CJ 4DPLEX contact.
+        </div>
+      </div>
+      <div class="notice-item">
+        <span class="notice-icon">!</span>
+        <div>
+          Before announcing any 4DX/ScreenX release, <strong>please check with the rights holder for any applicable embargo.</strong><br>
+          For Japanese titles, we recommend confirming in advance before making a public announcement.
+        </div>
+      </div>
     </div>
   </div>
 
   <header class="hero">
     <div class="hero-inner">
-      <h1><span class="x4">4DX</span> / <span class="sx">ScreenX</span> Programming Tracker</h1>
+      <h1><span class="x4">4DX</span> / <span class="sx">ScreenX</span> Lineup Tracker</h1>
       <span class="who" id="whoLabel"></span>
     </div>
   </header>
@@ -211,12 +428,11 @@
         </div>
       </div>
       <div class="row-controls">
-        <select id="originFilter" aria-label="Filter by region"><option value="">All regions</option></select>
+        <div class="multi-select" id="originMultiSelect">
+          <button type="button" class="multi-select-btn" id="originBtn" aria-haspopup="true" aria-expanded="false">All regions</button>
+          <div class="multi-select-panel" id="originPanel"></div>
+        </div>
         <select id="typeFilter" aria-label="Filter by type"><option value="">All types</option></select>
-        <label class="tbd-toggle">
-          <input type="checkbox" id="tbdToggle">
-          Show unconfirmed (TBD)
-        </label>
       </div>
     </div>
   </div>
@@ -228,11 +444,27 @@
     <div class="request-form" id="requestForm">
       <label for="reqTheater">Theater / chain</label>
       <input type="text" id="reqTheater" disabled>
+
       <label for="reqTitle">Requested title</label>
       <input type="text" id="reqTitle" placeholder="e.g. film name, studio if known">
+
+      <span class="format-request-label">Requested format</span>
+      <div class="format-request">
+        <label class="format-choice fdx">
+          <input type="checkbox" id="req4dx" value="4DX">
+          <span>4DX</span>
+        </label>
+        <label class="format-choice sx">
+          <input type="checkbox" id="reqSx" value="ScreenX">
+          <span>ScreenX</span>
+        </label>
+      </div>
+
       <label for="reqNote">Why this title / expected demand</label>
       <textarea id="reqNote" rows="3" placeholder="e.g. strong local fanbase, similar title performed well, etc."></textarea>
+
       <button id="reqSend">Send request</button>
+      <div class="send-status" id="sendStatus"></div>
     </div>
   </div>
 
@@ -260,7 +492,6 @@ const RAW = [
 ["Chiikawa: The Secret of Mermaid Island","TOHO","Japan","New Release",false,"Confirmed","Pass","2026-09-05"],
 ["Obsession","Universal","USA","New Release",false,"Confirmed","N/A","2026-09-05"],
 ["Raiders of the Lost Ark 45th Anniversary","Paramount","USA","Revival & Anniversary",false,"Confirmed","N/A","2026-09-09"],
-["Sardar 2","Others","India","New Release",false,"TBD","N/A","2026-09-10"],
 ["My Tomorrow, Your Yesterday (我想留在你身边)","Others","China","New Release",false,"Confirmed","N/A","2026-09-12"],
 ["Resident Evil (2026)","Sony","USA","New Release",false,"Confirmed","Confirmed","2026-09-16"],
 ["Transformers (40th Anniversary)","Paramount","USA","Revival & Anniversary",false,"Confirmed","N/A","2026-09-16"],
@@ -274,12 +505,9 @@ const RAW = [
 ["No Go: The Child (死亡禁区实录)","Others","China","New Release",false,"Confirmed","N/A","2026-09-25"],
 ["The Old Dog (老江湖)","Others","China","New Release",false,"Confirmed","Confirmed","2026-09-25"],
 ["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",false,"Confirmed","N/A","2026-09-25"],
-["The Vvaan: Force of the Forrest","Others","India","New Release",false,"TBD","N/A","2026-09-25"],
 ["Death Whisperer: Saming the Werebeast","M Studio","Thailand","New Release",false,"Confirmed","Confirmed","2026-09-30"],
-["Digger","WB","USA","New Release",false,"TBD","N/A","2026-09-30"],
 ["Linkin Park: Unshatter","Trafalgar/4DPLEX","Global","Concert & Live Event",false,"Confirmed","Confirmed","2026-09-30"],
 ["Reawaken Man: The Red (부활남)","Lotte","Korea","New Release",false,"Confirmed","Confirmed","2026-09-30"],
-["Verity","Sony","USA","New Release",false,"TBD","N/A","2026-09-30"],
 ["Mr. & Mrs. Pardon (什么意思夫妇)","Maoyan","China","New Release",false,"Confirmed","N/A","2026-10-01"],
 ["Traces of Justice (神探之痕迹)","Maoyan","China","New Release",false,"Confirmed","N/A","2026-10-01"],
 ["Star Detective Precure!","TOEI","Japan","New Release",false,"Confirmed","N/A","2026-10-02"],
@@ -289,44 +517,33 @@ const RAW = [
 ["Kuasa Gelap: Perjanjian Darah","Paragon Pictures","Indonesia","New Release",false,"Confirmed","N/A","2026-10-08"],
 ["Dangerous Cops 1 (Revival)","TOEI","Japan","Revival & Anniversary",false,"Confirmed","N/A","2026-10-09"],
 ["Girls und Panzer das Finale: Part 5","HAKUHODO DY Map","Japan","New Release",false,"Confirmed","N/A","2026-10-09"],
-["Bullet Train 2","TBD","Japan","New Release",false,"Confirmed","Confirmed","2026-10-14"],
+["Bullet Train 2","","Japan","New Release",false,"Confirmed","Confirmed","2026-10-14"],
 ["Guardians of the Video Game (전자오락수호대)","CJ CGV","Korea","New Release",false,"Confirmed","Confirmed","2026-10-14"],
 ["Street Fighter","Paramount","USA","New Release",false,"Confirmed","Confirmed","2026-10-14"],
-["Whalefall","Disney","USA","New Release",true,"Confirmed","TBD","2026-10-14"],
-["Jailer 2","Others","India","New Release",false,"TBD","N/A","2026-10-15"],
-["Nelly Rapp - Porten till underjorden","Others","Sweden","New Release",false,"TBD","N/A","2026-10-16"],
-["Clayface","WB","USA","New Release",false,"TBD","TBD","2026-10-21"],
-["Wildwood","Others","USA","New Release",false,"TBD","N/A","2026-10-21"],
+["Whalefall","Disney","USA","New Release",true,"Confirmed","N/A","2026-10-14"],
 ["Nakee 3: The Cursed War","M Studio","Thailand","New Release",false,"Confirmed","N/A","2026-10-22"],
 ["Attack on Titan: Crimson Bow and Arrow (Revival)","Pony Canyon","Japan","Revival & Anniversary",false,"Confirmed","Confirmed","2026-10-23"],
 ["Lovelive Bloom Garden Party","Bandai Namco","Japan","Concert & Live Event",false,"Confirmed","N/A","2026-10-23"],
-["ME MIN","Vietnam CGV","Vietnam","New Release",false,"Confirmed","TBD","2026-10-23"],
-["Wicker","Others","USA","New Release",false,"TBD","N/A","2026-10-23"],
-["Wife & Dog","Others","UK","New Release",false,"TBD","N/A","2026-10-23"],
-["The Cat in the Hat","WB","USA","New Release",true,"TBD","TBD","2026-11-04"],
-["The Last Bliss","M Studio","Thailand","New Release",false,"TBD","N/A","2026-11-05"],
+["ME MIN","Vietnam CGV","Vietnam","New Release",false,"Confirmed","N/A","2026-10-23"],
 ["Ramayana: Part 1","Others","India","New Release",false,"Confirmed","Confirmed","2026-11-06"],
-["How to Rob a Bank","Amazon MGM/Sony","USA","New Release",true,"Confirmed","TBD","2026-11-11"],
-["The Uninvited (손 없는 날)","CJ CGV","Korea","New Release",false,"TBD","TBD","2026-11-11"],
+["How to Rob a Bank","Amazon MGM/Sony","USA","New Release",true,"Confirmed","N/A","2026-11-11"],
 ["Expelled from Paradise: Resonance from the Heart","TOEI","Japan","New Release",false,"Confirmed","N/A","2026-11-13"],
 ["Godzilla Minus Zero","TOHO","Japan","Revival & Anniversary",false,"Confirmed","Pass","2026-11-13"],
-["Canvas of Blood (몽유도원도)","PLUSM","Korea","New Release",false,"TBD","TBD","2026-11-18"],
 ["The Hunger Games: Sunrise on the Reaping","Lionsgate","USA","New Release",false,"Confirmed","Confirmed","2026-11-18"],
-["Hexed","Disney","USA","New Release",true,"TBD","Pass","2026-11-23"],
 ["Dangerous Cops 2 (Revival)","TOEI","Japan","Revival & Anniversary",false,"Confirmed","N/A","2026-11-27"],
 ["Witch on the Holy Night","Aniplex","Japan","New Release",false,"Confirmed","Confirmed","2026-11-27"],
-["JSB 15th Anniversary Stadium Live \"JSB FOREVER ～ONE～\" THE MOVIE","TBD","Global","Concert & Live Event",false,"Confirmed","Confirmed","2026-11-27"],
-["Astérix: Le Royaume de Nubie","Others","France","New Release",false,"TBD","TBD","2026-12-02"],
+["JSB 15th Anniversary Stadium Live \"JSB FOREVER ～ONE～\" THE MOVIE","","Global","Concert & Live Event",false,"Confirmed","Confirmed","2026-11-27"],
 ["Violent Night 2","Universal","USA","New Release",false,"Confirmed","N/A","2026-12-02"],
-["Chanmunda","Others","India","New Release",false,"TBD","N/A","2026-12-04"],
-["The Angry Birds Movie 3","Sony","USA","New Release",false,"TBD","N/A","2026-12-10"],
 ["Dangerous Cops 3 (Revival)","TOEI","Japan","Revival & Anniversary",false,"Confirmed","N/A","2026-12-11"],
-["Jumanji: Open World","Sony","USA","New Release",false,"TBD","TBD","2026-12-11"],
-["Avengers: Doomsday","Disney","USA","New Release",false,"Confirmed","Confirmed","2026-12-16"],
-["Dune: Part Three","WB","USA","New Release",false,"TBD","N/A","2026-12-16"],
-["King","Others","India","New Release",false,"TBD","N/A","2026-12-24"],
-["Mahavatar","Others","India","New Release",false,"TBD","TBD","2026-12-25"]
+["Avengers: Doomsday","Disney","USA","New Release",false,"Confirmed","Confirmed","2026-12-16"]
 ];
+
+const TITLE_NOTES = {
+  "Attack on Titan: Crimson Bow and Arrow (Revival)":
+    "<strong>Note:</strong> Available in 4DX, ScreenX, and 2D from October 23. A separate 4DX Enhanced Version code is also available. If there is exhibitor interest in a market without a local distributor, the Japanese distributor may be able to assist with an introduction.",
+  "Godzilla Minus Zero":
+    "<strong>Note:</strong> 4DX release is available from Nov 13."
+};
 
 const ORIGIN_TO_REGION = {
   USA: "Hollywood", Japan: "Japan", Korea: "Korea", China: "China",
@@ -341,7 +558,8 @@ const REGION_LABEL = {
 const DATA = RAW.map(r => ({
   title: r[0], studio: r[1], country: r[2],
   region: ORIGIN_TO_REGION[r[2]] || "Other",
-  type: r[3], flat: r[4], fdx: r[5], sx: r[6], date: r[7]
+  type: r[3], flat: r[4], fdx: r[5], sx: r[6], date: r[7],
+  note: TITLE_NOTES[r[0]] || ""
 }));
 
 // ---- Login ----
@@ -377,16 +595,70 @@ function init() {
   const MONTH_FMT = d => new Date(d + "T00:00:00").toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   const DATE_FMT = d => new Date(d + "T00:00:00").toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-  const originSel = document.getElementById('originFilter');
   const counts = {};
   DATA.forEach(d => { counts[d.region] = (counts[d.region] || 0) + 1; });
   const regionsSorted = Object.keys(counts)
     .filter(r => r !== 'Hollywood')
     .sort((a, b) => counts[b] - counts[a]);
   const orderedRegions = ['Hollywood', ...regionsSorted];
-  orderedRegions.forEach(r => {
-    const o = document.createElement('option'); o.value = r; o.textContent = REGION_LABEL[r] || r;
-    originSel.appendChild(o);
+
+  const selectedRegions = new Set();
+  const originBtn = document.getElementById('originBtn');
+  const originPanel = document.getElementById('originPanel');
+
+  function renderOriginPanel() {
+    originPanel.innerHTML = '';
+    orderedRegions.forEach(r => {
+      const label = document.createElement('label');
+      label.className = 'multi-select-option';
+      label.innerHTML = `<input type="checkbox" value="${r}" ${selectedRegions.has(r) ? 'checked' : ''}> ${REGION_LABEL[r] || r}`;
+      label.querySelector('input').addEventListener('change', e => {
+        if (e.target.checked) selectedRegions.add(r); else selectedRegions.delete(r);
+        updateOriginButton();
+        render();
+      });
+      originPanel.appendChild(label);
+    });
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'multi-select-clear';
+    clearBtn.textContent = 'Clear';
+    clearBtn.addEventListener('click', () => {
+      selectedRegions.clear();
+      renderOriginPanel();
+      updateOriginButton();
+      render();
+    });
+    originPanel.appendChild(clearBtn);
+  }
+
+  function updateOriginButton() {
+    if (selectedRegions.size === 0) {
+      originBtn.textContent = 'All regions';
+      originBtn.classList.remove('has-selection');
+    } else if (selectedRegions.size === 1) {
+      const r = [...selectedRegions][0];
+      originBtn.textContent = REGION_LABEL[r] || r;
+      originBtn.classList.add('has-selection');
+    } else {
+      originBtn.textContent = `${selectedRegions.size} regions selected`;
+      originBtn.classList.add('has-selection');
+    }
+  }
+
+  renderOriginPanel();
+  updateOriginButton();
+
+  originBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = originPanel.classList.toggle('open');
+    originBtn.setAttribute('aria-expanded', isOpen);
+  });
+  document.addEventListener('click', e => {
+    if (!document.getElementById('originMultiSelect').contains(e.target)) {
+      originPanel.classList.remove('open');
+      originBtn.setAttribute('aria-expanded', 'false');
+    }
   });
 
   const typeSel = document.getElementById('typeFilter');
@@ -407,35 +679,30 @@ function init() {
     });
   });
 
-  const applicable = s => s === 'Confirmed' || s === 'TBD';
+  const applicable = s => s === 'Confirmed';
 
   function formatBadges(d) {
     const parts = [];
     if ((venue === 'both' || venue === '4dx') && applicable(d.fdx)) {
-      parts.push(`<span class="badge b-4dx${d.fdx === 'TBD' ? ' b-tbd' : ''}">4DX${d.fdx === 'TBD' ? ' TBD' : ''}</span>`);
+      parts.push(`<span class="badge b-4dx">4DX</span>`);
     }
     if ((venue === 'both' || venue === 'sx') && applicable(d.sx)) {
-      parts.push(`<span class="badge b-sx${d.sx === 'TBD' ? ' b-tbd' : ''}">SX${d.sx === 'TBD' ? ' TBD' : ''}</span>`);
+      parts.push(`<span class="badge b-sx">SX</span>`);
     }
     return parts.join('');
   }
 
   function render() {
     const q = document.getElementById('searchInput').value.trim().toLowerCase();
-    const region = originSel.value;
     const type = typeSel.value;
-    const showTbd = document.getElementById('tbdToggle').checked;
 
     let rows = DATA.filter(d => {
       if (q && !(d.title.toLowerCase().includes(q) || d.studio.toLowerCase().includes(q))) return false;
-      if (region && d.region !== region) return false;
+      if (selectedRegions.size > 0 && !selectedRegions.has(d.region)) return false;
       if (type && d.type !== type) return false;
       if (venue === '4dx' && !applicable(d.fdx)) return false;
       if (venue === 'sx' && !applicable(d.sx)) return false;
       if (venue === 'both' && !applicable(d.fdx) && !applicable(d.sx)) return false;
-
-      const relevant = venue === '4dx' ? [d.fdx] : venue === 'sx' ? [d.sx] : [d.fdx, d.sx].filter(applicable);
-      if (!showTbd && relevant.every(s => s === 'TBD')) return false;
       return true;
     });
 
@@ -445,15 +712,13 @@ function init() {
     main.innerHTML = "";
 
     if (rows.length === 0) {
-      main.innerHTML = `<div class="empty-state">No titles match these filters. Try clearing the search or enabling "Show unconfirmed (TBD)".</div>`;
+      main.innerHTML = `<div class="empty-state">No confirmed titles match these filters. Try clearing the search.</div>`;
       return;
     }
 
     let currentMonth = "";
     let groupEl = null;
-    rows.forEach(d => {
-      const isTbdRow = (venue === 'both') ? (d.fdx === 'TBD' || d.sx === 'TBD') : (venue === '4dx' ? d.fdx === 'TBD' : d.sx === 'TBD');
-      const m = MONTH_FMT(d.date);
+    rows.forEach(d => {      const m = MONTH_FMT(d.date);
       if (m !== currentMonth) {
         currentMonth = m;
         const group = document.createElement('div');
@@ -463,7 +728,7 @@ function init() {
         groupEl = group;
       }
       const row = document.createElement('div');
-      row.className = 'row' + (isTbdRow ? ' tbd-row' : '');
+      row.className = 'row';
       row.innerHTML = `
         <div class="cell-date">${DATE_FMT(d.date)}</div>
         <div class="cell-title">
@@ -473,6 +738,7 @@ function init() {
             <span class="tag">${d.type}</span>
             ${d.flat ? '<span class="tag flat">also releasing flat/2D</span>' : ''}
           </div>
+          ${d.note ? `<div class="title-note">${d.note}</div>` : ''}
         </div>
         <div class="badge-pair">${formatBadges(d)}</div>
       `;
@@ -480,7 +746,7 @@ function init() {
     });
   }
 
-  ['searchInput','originFilter','typeFilter','tbdToggle'].forEach(id => {
+  ['searchInput','typeFilter'].forEach(id => {
     document.getElementById(id).addEventListener('input', render);
     document.getElementById(id).addEventListener('change', render);
   });
@@ -488,17 +754,40 @@ function init() {
   render();
 
   // ---- Request form ----
-  const REQUEST_EMAIL = "REPLACE_WITH_LINA_EMAIL@example.com";
+  // Shared as a Claude artifact link, so requests go out via mailto (fetch to
+  // external services like Formspree is blocked by the artifact's network policy).
+  const REQUEST_EMAIL = "healin.hwang@cj.net";
+
   document.getElementById('requestToggle').addEventListener('click', () => {
     document.getElementById('requestForm').classList.toggle('open');
   });
+
   document.getElementById('reqSend').addEventListener('click', () => {
     const theater = document.getElementById('reqTheater').value;
     const title = document.getElementById('reqTitle').value.trim();
     const note = document.getElementById('reqNote').value.trim();
-    if (!title) { document.getElementById('reqTitle').focus(); return; }
+    const req4dx = document.getElementById('req4dx').checked;
+    const reqSx = document.getElementById('reqSx').checked;
+    const status = document.getElementById('sendStatus');
+
+    status.className = 'send-status';
+    status.textContent = '';
+
+    if (!title) {
+      status.classList.add('err');
+      status.textContent = 'Please enter a title.';
+      document.getElementById('reqTitle').focus();
+      return;
+    }
+    if (!req4dx && !reqSx) {
+      status.classList.add('err');
+      status.textContent = 'Please select 4DX, ScreenX, or both.';
+      return;
+    }
+
+    const formats = [req4dx ? '4DX' : '', reqSx ? 'ScreenX' : ''].filter(Boolean).join(' + ');
     const subject = encodeURIComponent(`[4DX/ScreenX Title Request] ${theater} — ${title}`);
-    const body = encodeURIComponent(`Theater: ${theater}\nRequested title: ${title}\nReason / expected demand: ${note || '-'}`);
+    const body = encodeURIComponent(`Theater: ${theater}\nRequested title: ${title}\nRequested format: ${formats}\nReason / expected demand: ${note || '-'}`);
     window.location.href = `mailto:${REQUEST_EMAIL}?subject=${subject}&body=${body}`;
   });
 }
