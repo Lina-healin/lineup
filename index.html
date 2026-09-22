@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>4DX / ScreenX Lineup Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,7 +12,11 @@
     --bg: #121218; --bg-raised: #1B1C24; --bg-row-alt: #16171E;
     --line: #2C2D38; --text: #EFEDE7; --text-dim: #9A9AA6; --text-faint: #6C6C78;
     --4dx: #E8492B; --sx: #3B7DD8; --warn: #D8A73B;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   :root:not([data-theme="light"]) { color-scheme: dark; }
   @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) {
@@ -25,6 +29,10 @@
     margin: 0; background: var(--bg); color: var(--text);
     font-family: 'IBM Plex Sans', -apple-system, 'Malgun Gothic', sans-serif;
     -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(circle at top left, color-mix(in srgb, var(--sx) 7%, transparent) 0, transparent 28%),
+      radial-gradient(circle at top right, color-mix(in srgb, var(--4dx) 6%, transparent) 0, transparent 26%),
+      var(--bg);
   }
 
   /* ---------- Login gate ---------- */
@@ -36,6 +44,7 @@
     width: 100%; max-width: 340px;
     background: var(--bg-raised); border: 1px solid var(--line); border-radius: 10px;
     padding: 28px 24px;
+    box-shadow: 0 18px 48px rgba(0,0,0,.16);
   }
   .login-card h1 {
     font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; margin: 0 0 4px;
@@ -55,33 +64,57 @@
 
   /* ---------- Notice banner ---------- */
   .notice {
-    background: color-mix(in srgb, var(--warn) 14%, var(--bg-raised));
-    border-bottom: 1px solid var(--warn);
-    padding: 10px 20px;
+    background: color-mix(in srgb, var(--warn) 9%, var(--bg-raised));
+    border-bottom: 1px solid color-mix(in srgb, var(--warn) 55%, var(--line));
+    padding: 14px 20px;
     font-size: 0.8rem;
     line-height: 1.5;
     color: var(--text);
   }
-  .notice-inner { max-width: 900px; margin: 0 auto; }
-  .notice b { color: var(--warn); }
+  .notice-inner { max-width: 900px; margin: 0 auto; display: grid; gap: 10px; }
+  .notice-item {
+    display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start;
+    color: var(--text-dim); font-size: 0.8rem; line-height: 1.55;
+  }
+  .notice-item strong { color: var(--text); font-weight: 600; }
+  .notice-icon {
+    width: 20px; height: 20px; border-radius: 50%; display: inline-flex;
+    align-items: center; justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--warn) 65%, var(--line));
+    color: var(--warn); font-family: 'IBM Plex Mono', monospace; font-size: .7rem;
+    font-weight: 700; margin-top: 1px;
+  }
 
-  .hero { padding: 22px 20px 16px; background: var(--bg-raised); border-bottom: 1px solid var(--line); }
+  .hero {
+    padding: 26px 20px 18px; background: color-mix(in srgb, var(--bg-raised) 94%, transparent);
+    border-bottom: 1px solid var(--line);
+    padding-top: calc(26px + env(safe-area-inset-top, 0px));
+  }
   .hero-inner { max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .hero h1 {
     font-family: 'Bebas Neue', 'IBM Plex Sans', sans-serif;
-    font-size: clamp(1.6rem, 6vw, 2.2rem); letter-spacing: 0.02em; margin: 0; line-height: 1;
+    font-size: clamp(1.6rem, 6vw, 2.2rem); letter-spacing: 0.025em; margin: 0; line-height: 1;
   }
   .hero h1 span.x4 { color: var(--4dx); }
   .hero h1 span.sx { color: var(--sx); }
-  .hero .who { font-size: 0.78rem; color: var(--text-faint); }
+  .hero .who { font-size: 0.78rem; color: var(--text-faint); display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .hero .who .updated { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--text-faint); }
 
-  .controls { position: sticky; top: 0; z-index: 10; background: var(--bg-raised); border-bottom: 1px solid var(--line); padding: 12px 20px; }
+  .controls {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+    background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line); padding: 12px 20px;
+  }
   .controls-inner { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
   input[type="search"] {
     width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text);
     padding: 11px 12px; border-radius: 8px; font-size: 1rem; font-family: inherit;
   }
-  input[type="search"]:focus, select:focus { outline: 2px solid var(--sx); outline-offset: 1px; }
+  input[type="search"]:focus, select:focus {
+    outline: none; border-color: color-mix(in srgb, var(--sx) 75%, var(--line));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sx) 14%, transparent);
+  }
   .row-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
   .venue-seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex: 1 1 auto; min-width: 200px; }
@@ -126,21 +159,20 @@
     color: var(--text-faint); font-size: 0.78rem; cursor: pointer; font-family: inherit;
   }
 
-  .tbd-toggle {
-    display: flex; align-items: center; gap: 7px; padding: 9px 12px; border: 1px dashed var(--tbd);
-    border-radius: 8px; font-size: 0.85rem; color: var(--tbd); cursor: pointer; user-select: none;
-    flex: 1 1 auto; white-space: nowrap;
-  }
-  .tbd-toggle input { accent-color: var(--tbd); }
-
-  main { max-width: 900px; margin: 0 auto; padding: 16px 20px 40px; }
+  main { max-width: 900px; margin: 0 auto; padding: 16px 20px 40px; overflow-x: auto; }
   .month-group { margin-top: 22px; }
   .month-heading {
     font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; letter-spacing: 0.08em;
     color: var(--text-faint); padding-bottom: 8px; border-bottom: 1px solid var(--line); margin-bottom: 2px;
   }
-  .row { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+  .row {
+    display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center;
+    padding: 12px 8px; border-bottom: 1px solid var(--line); border-radius: 8px;
+    transition: background .16s ease;
+  }
+  .row:hover { background: color-mix(in srgb, var(--bg-raised) 82%, var(--sx) 4%); }
   .row:nth-child(even) { background: var(--bg-row-alt); }
+  .row:nth-child(even):hover { background: color-mix(in srgb, var(--bg-row-alt) 82%, var(--sx) 4%); }
   .cell-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--text-dim); white-space: nowrap; }
   .cell-title { min-width: 0; }
   .cell-title .t { font-size: 0.96rem; font-weight: 600; line-height: 1.3; }
@@ -156,14 +188,9 @@
   .tag.origin-Global { color: #D8C86F; border-color: #4a4324; }
   .tag.flat { font-style: italic; }
   .title-note {
-    margin-top: 7px;
-    font-size: 0.76rem;
-    line-height: 1.45;
-    color: var(--text-dim);
-    padding: 6px 8px;
-    border-left: 2px solid var(--warn);
-    background: color-mix(in srgb, var(--warn) 7%, transparent);
-    border-radius: 0 5px 5px 0;
+    margin-top: 7px; font-size: 0.76rem; line-height: 1.45; color: var(--text-dim);
+    padding: 6px 8px; border-left: 2px solid var(--warn);
+    background: color-mix(in srgb, var(--warn) 7%, transparent); border-radius: 0 5px 5px 0;
   }
   .title-note strong { color: var(--warn); font-weight: 600; }
   .badge-pair { display: flex; gap: 5px; justify-self: end; }
@@ -173,30 +200,58 @@
   .empty-state { text-align: center; padding: 60px 16px; color: var(--text-faint); font-size: 0.92rem; }
 
   /* ---------- Request form ---------- */
-  .request-block { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+  .request-block { max-width: 900px; margin: 0 auto; padding: 0 20px 60px; padding-top: 8px; }
   .request-toggle {
-    background: none; border: 1px dashed var(--line); color: var(--text-dim);
-    padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; width: 100%;
-    text-align: left; font-family: inherit;
+    background: color-mix(in srgb, var(--bg-raised) 94%, transparent); border: 1px dashed var(--line);
+    color: var(--text-dim); padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; cursor: pointer;
+    width: 100%; text-align: left; font-family: inherit;
+    transition: border-color .18s ease, background .18s ease;
+  }
+  .request-toggle:hover {
+    border-color: color-mix(in srgb, var(--sx) 45%, var(--line));
+    background: color-mix(in srgb, var(--bg-raised) 90%, var(--sx) 5%);
   }
   .request-form {
     display: none; margin-top: 10px; background: var(--bg-raised); border: 1px solid var(--line);
-    border-radius: 8px; padding: 16px;
+    border-radius: 8px; padding: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.10);
   }
   .request-form.open { display: block; }
   .request-form label { display: block; font-size: 0.78rem; color: var(--text-faint); margin: 10px 0 4px; }
   .request-form input, .request-form textarea {
     width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text);
     padding: 9px 10px; border-radius: 6px; font-size: 0.9rem; font-family: inherit; resize: vertical;
+    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  }
+  .request-form input:focus, .request-form textarea:focus {
+    outline: none; border-color: color-mix(in srgb, var(--sx) 75%, var(--line));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sx) 14%, transparent);
   }
   .request-form input[disabled] { color: var(--text-faint); }
   .request-form button {
     margin-top: 14px; background: var(--sx); color: #fff; border: none; padding: 10px 16px;
     border-radius: 7px; font-weight: 600; font-size: 0.88rem; cursor: pointer;
   }
+  .request-form button[disabled] { opacity: .55; cursor: wait; }
+
+  .format-request-label { display: block; font-size: 0.78rem; color: var(--text-faint); margin: 10px 0 6px; }
+  .format-request { display: flex; gap: 8px; flex-wrap: wrap; }
+  .format-choice { position: relative; }
+  .format-choice input { position: absolute; opacity: 0; pointer-events: none; }
+  .format-choice span {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 84px;
+    padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line); color: var(--text-dim);
+    background: var(--bg); font-size: .84rem; font-weight: 600; cursor: pointer; transition: all .16s ease;
+  }
+  .format-choice input:checked + span { color: #fff; border-color: transparent; }
+  .format-choice.fdx input:checked + span { background: var(--4dx); }
+  .format-choice.sx input:checked + span { background: var(--sx); }
+
+  .send-status { margin-top: 10px; font-size: .8rem; color: var(--text-dim); min-height: 1.2em; }
+  .send-status.ok { color: #6FBF8B; }
+  .send-status.err { color: var(--4dx); }
 
   @media (max-width: 560px) {
-    .hero { padding: 18px 16px 14px; }
+    .hero { padding: 18px 16px 14px; padding-top: calc(18px + env(safe-area-inset-top, 0px)); }
     .row { grid-template-columns: 1fr auto; }
     .cell-date { display: none; }
     .cell-title .t::before {
@@ -206,174 +261,6 @@
     .badge-pair { flex-direction: column; align-self: start; }
     select { flex: 1 1 100%; }
   }
-
-  /* ---------- Visual refinement ---------- */
-  body {
-    background:
-      radial-gradient(circle at top left, color-mix(in srgb, var(--sx) 7%, transparent) 0, transparent 28%),
-      radial-gradient(circle at top right, color-mix(in srgb, var(--4dx) 6%, transparent) 0, transparent 26%),
-      var(--bg);
-  }
-
-  .login-card {
-    box-shadow: 0 18px 48px rgba(0,0,0,.16);
-    backdrop-filter: blur(10px);
-  }
-
-  .notice {
-    background: color-mix(in srgb, var(--warn) 9%, var(--bg-raised));
-    border-bottom: 1px solid color-mix(in srgb, var(--warn) 55%, var(--line));
-    padding: 14px 20px;
-  }
-
-  .notice-inner {
-    max-width: 900px;
-    margin: 0 auto;
-    display: grid;
-    gap: 10px;
-  }
-
-  .notice-item {
-    display: grid;
-    grid-template-columns: 24px 1fr;
-    gap: 10px;
-    align-items: start;
-    color: var(--text-dim);
-    font-size: 0.8rem;
-    line-height: 1.55;
-  }
-
-  .notice-item strong { color: var(--text); font-weight: 600; }
-
-  .notice-icon {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid color-mix(in srgb, var(--warn) 65%, var(--line));
-    color: var(--warn);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: .7rem;
-    font-weight: 700;
-    margin-top: 1px;
-  }
-
-  .hero {
-    padding: 26px 20px 18px;
-    background: color-mix(in srgb, var(--bg-raised) 94%, transparent);
-  }
-
-  .hero h1 { letter-spacing: .025em; }
-
-  .controls {
-    backdrop-filter: blur(14px);
-    background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
-  }
-
-  input[type="search"], select,
-  .request-form input, .request-form textarea {
-    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
-  }
-
-  input[type="search"]:focus, select:focus,
-  .request-form input:focus, .request-form textarea:focus {
-    outline: none;
-    border-color: color-mix(in srgb, var(--sx) 75%, var(--line));
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--sx) 14%, transparent);
-  }
-
-  .row {
-    transition: background .16s ease, transform .16s ease;
-    border-radius: 8px;
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-
-  .row:hover {
-    background: color-mix(in srgb, var(--bg-raised) 82%, var(--sx) 4%);
-  }
-
-  .request-block { padding-top: 8px; }
-
-  .request-toggle {
-    background: color-mix(in srgb, var(--bg-raised) 94%, transparent);
-    border-style: solid;
-    transition: border-color .18s ease, background .18s ease, transform .18s ease;
-  }
-
-  .request-toggle:hover {
-    border-color: color-mix(in srgb, var(--sx) 45%, var(--line));
-    background: color-mix(in srgb, var(--bg-raised) 90%, var(--sx) 5%);
-  }
-
-  .request-form {
-    box-shadow: 0 14px 36px rgba(0,0,0,.10);
-  }
-
-  .format-request-label {
-    display: block;
-    font-size: 0.78rem;
-    color: var(--text-faint);
-    margin: 10px 0 6px;
-  }
-
-  .format-request {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .format-choice {
-    position: relative;
-  }
-
-  .format-choice input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .format-choice span {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 84px;
-    padding: 9px 14px;
-    border-radius: 8px;
-    border: 1px solid var(--line);
-    color: var(--text-dim);
-    background: var(--bg);
-    font-size: .84rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all .16s ease;
-  }
-
-  .format-choice input:checked + span {
-    color: #fff;
-    border-color: transparent;
-  }
-
-  .format-choice.fdx input:checked + span { background: var(--4dx); }
-  .format-choice.sx input:checked + span { background: var(--sx); }
-
-  .send-status {
-    margin-top: 10px;
-    font-size: .8rem;
-    color: var(--text-dim);
-    min-height: 1.2em;
-  }
-
-  .send-status.ok { color: #6FBF8B; }
-  .send-status.err { color: var(--4dx); }
-
-  .request-form button[disabled] {
-    opacity: .55;
-    cursor: wait;
-  }
-
 </style>
 </head>
 <body>
@@ -396,8 +283,8 @@
       <div class="notice-item">
         <span class="notice-icon">i</span>
         <div>
-          <strong>This tracker shows the confirmed titles currently listed.</strong><br>
-          Some upcoming or early-release titles may not yet appear here. If you are looking for a title that is not listed, please check with your CJ 4DPLEX contact.
+          <strong>This tracker shows only confirmed 4DX / ScreenX titles.</strong><br>
+          Titles that are still under review or not yet decided are intentionally left off this list. If you are looking for a title that is not listed, please check with your CJ 4DPLEX contact.
         </div>
       </div>
       <div class="notice-item">
@@ -413,7 +300,10 @@
   <header class="hero">
     <div class="hero-inner">
       <h1><span class="x4">4DX</span> / <span class="sx">ScreenX</span> Lineup Tracker</h1>
-      <span class="who" id="whoLabel"></span>
+      <span class="who">
+        <span id="whoLabel"></span>
+        <span class="updated">Updated on Sep 22, 2026</span>
+      </span>
     </div>
   </header>
 
@@ -486,56 +376,65 @@ const CREDENTIALS = {
   "cj4dplex":       { pw: "HQ2026!",       label: "CJ 4DPLEX HQ" }
 };
 
+// ---- Data model ----------------------------------------------------------
+// IMPORTANT: fdx / sx are BOOLEANS only. There is no "TBD" / "N/A" / "Pass"
+// status anywhere in this file — a format is either confirmed (true) or it
+// is simply not included here. Only rows that are confirmed for at least
+// one format belong in this array. This guarantees unconfirmed titles can
+// never leak into the UI, even by accident, because there is no string
+// value left for a rendering bug to mis-check against.
 const RAW = [
-["Onslaught","A24","USA","New Release",false,"Confirmed","N/A","2026-09-02"],
-["Cars (2006)","Disney","USA","Revival & Anniversary",false,"Confirmed","N/A","2026-09-04"],
-["Chiikawa: The Secret of Mermaid Island","TOHO","Japan","New Release",false,"Confirmed","Pass","2026-09-05"],
-["Obsession","Universal","USA","New Release",false,"Confirmed","N/A","2026-09-05"],
-["Raiders of the Lost Ark 45th Anniversary","Paramount","USA","Revival & Anniversary",false,"Confirmed","N/A","2026-09-09"],
-["My Tomorrow, Your Yesterday (我想留在你身边)","Others","China","New Release",false,"Confirmed","N/A","2026-09-12"],
-["Resident Evil (2026)","Sony","USA","New Release",false,"Confirmed","Confirmed","2026-09-16"],
-["Transformers (40th Anniversary)","Paramount","USA","Revival & Anniversary",false,"Confirmed","N/A","2026-09-16"],
-["Terbang","Astro Shaw","Malaysia","New Release",false,"Confirmed","N/A","2026-09-17"],
-["Cosmic Princess Kaguya!","Others","Japan","New Release",false,"Confirmed","Confirmed","2026-09-18"],
-["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",false,"Confirmed","N/A","2026-09-19"],
-["Avengers ENDGAME (2026 re-release)","Disney","USA","Revival & Anniversary",false,"Confirmed","Confirmed","2026-09-23"],
-["Forgotten Island","Universal","USA","New Release",false,"Confirmed","Confirmed","2026-09-23"],
-["Heart of the Beast","Others","USA","New Release",false,"Confirmed","N/A","2026-09-23"],
-["Trai Buon Nguoi (The Human Animal Camp)","Galaxy","Vietnam","New Release",false,"Confirmed","N/A","2026-09-24"],
-["No Go: The Child (死亡禁区实录)","Others","China","New Release",false,"Confirmed","N/A","2026-09-25"],
-["The Old Dog (老江湖)","Others","China","New Release",false,"Confirmed","Confirmed","2026-09-25"],
-["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",false,"Confirmed","N/A","2026-09-25"],
-["Death Whisperer: Saming the Werebeast","M Studio","Thailand","New Release",false,"Confirmed","Confirmed","2026-09-30"],
-["Linkin Park: Unshatter","Trafalgar/4DPLEX","Global","Concert & Live Event",false,"Confirmed","Confirmed","2026-09-30"],
-["Reawaken Man: The Red (부활남)","Lotte","Korea","New Release",false,"Confirmed","Confirmed","2026-09-30"],
-["Mr. & Mrs. Pardon (什么意思夫妇)","Maoyan","China","New Release",false,"Confirmed","N/A","2026-10-01"],
-["Traces of Justice (神探之痕迹)","Maoyan","China","New Release",false,"Confirmed","N/A","2026-10-01"],
-["Star Detective Precure!","TOEI","Japan","New Release",false,"Confirmed","N/A","2026-10-02"],
-["Puella Magi Madoka Magica the Movie -Walpurgisnacht Rising-","Aniplex","Japan","New Release",false,"Confirmed","N/A","2026-10-03"],
-["Other Mommy","Universal","USA","New Release",false,"Confirmed","Pass","2026-10-07"],
-["Wakas at Simula: The Trilogy Concert Finale","4DPLEX","Philippines","Concert & Live Event",false,"Confirmed","Confirmed","2026-10-07"],
-["Kuasa Gelap: Perjanjian Darah","Paragon Pictures","Indonesia","New Release",false,"Confirmed","N/A","2026-10-08"],
-["Dangerous Cops 1 (Revival)","TOEI","Japan","Revival & Anniversary",false,"Confirmed","N/A","2026-10-09"],
-["Girls und Panzer das Finale: Part 5","HAKUHODO DY Map","Japan","New Release",false,"Confirmed","N/A","2026-10-09"],
-["Bullet Train 2","","Japan","New Release",false,"Confirmed","Confirmed","2026-10-14"],
-["Guardians of the Video Game (전자오락수호대)","CJ CGV","Korea","New Release",false,"Confirmed","Confirmed","2026-10-14"],
-["Street Fighter","Paramount","USA","New Release",false,"Confirmed","Confirmed","2026-10-14"],
-["Whalefall","Disney","USA","New Release",true,"Confirmed","N/A","2026-10-14"],
-["Nakee 3: The Cursed War","M Studio","Thailand","New Release",false,"Confirmed","N/A","2026-10-22"],
-["Attack on Titan: Crimson Bow and Arrow (Revival)","Pony Canyon","Japan","Revival & Anniversary",false,"Confirmed","Confirmed","2026-10-23"],
-["Lovelive Bloom Garden Party","Bandai Namco","Japan","Concert & Live Event",false,"Confirmed","N/A","2026-10-23"],
-["ME MIN","Vietnam CGV","Vietnam","New Release",false,"Confirmed","N/A","2026-10-23"],
-["Ramayana: Part 1","Others","India","New Release",false,"Confirmed","Confirmed","2026-11-06"],
-["How to Rob a Bank","Amazon MGM/Sony","USA","New Release",true,"Confirmed","N/A","2026-11-11"],
-["Expelled from Paradise: Resonance from the Heart","TOEI","Japan","New Release",false,"Confirmed","N/A","2026-11-13"],
-["Godzilla Minus Zero","TOHO","Japan","Revival & Anniversary",false,"Confirmed","Pass","2026-11-13"],
-["The Hunger Games: Sunrise on the Reaping","Lionsgate","USA","New Release",false,"Confirmed","Confirmed","2026-11-18"],
-["Dangerous Cops 2 (Revival)","TOEI","Japan","Revival & Anniversary",false,"Confirmed","N/A","2026-11-27"],
-["Witch on the Holy Night","Aniplex","Japan","New Release",false,"Confirmed","Confirmed","2026-11-27"],
-["JSB 15th Anniversary Stadium Live \"JSB FOREVER ～ONE～\" THE MOVIE","","Global","Concert & Live Event",false,"Confirmed","Confirmed","2026-11-27"],
-["Violent Night 2","Universal","USA","New Release",false,"Confirmed","N/A","2026-12-02"],
-["Dangerous Cops 3 (Revival)","TOEI","Japan","Revival & Anniversary",false,"Confirmed","N/A","2026-12-11"],
-["Avengers: Doomsday","Disney","USA","New Release",false,"Confirmed","Confirmed","2026-12-16"]
+["Onslaught","A24","USA","New Release",false,true,false,"2026-09-02"],
+["Cars (2006)","Disney","USA","Revival & Anniversary",false,true,false,"2026-09-04"],
+["Chiikawa: The Secret of Mermaid Island","TOHO","Japan","New Release",false,true,false,"2026-09-05"],
+["Obsession","Universal","USA","New Release",false,true,false,"2026-09-05"],
+["Raiders of the Lost Ark 45th Anniversary","Paramount","USA","Revival & Anniversary",false,true,false,"2026-09-09"],
+["My Tomorrow, Your Yesterday (我想留在你身边)","Others","China","New Release",false,true,false,"2026-09-12"],
+["Resident Evil (2026)","Sony","USA","New Release",false,true,true,"2026-09-16"],
+["Transformers (40th Anniversary)","Paramount","USA","Revival & Anniversary",false,true,false,"2026-09-16"],
+["Terbang","Astro Shaw","Malaysia","New Release",false,true,false,"2026-09-17"],
+["Cosmic Princess Kaguya!","Others","Japan","New Release",false,true,true,"2026-09-18"],
+["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",false,true,false,"2026-09-19"],
+["Avengers ENDGAME (2026 re-release)","Disney","USA","Revival & Anniversary",false,true,true,"2026-09-23"],
+["Forgotten Island","Universal","USA","New Release",false,true,true,"2026-09-23"],
+["Heart of the Beast","Others","USA","New Release",false,true,false,"2026-09-23"],
+["Trai Buon Nguoi (The Human Animal Camp)","Galaxy","Vietnam","New Release",false,true,false,"2026-09-24"],
+["No Go: The Child (死亡禁区实录)","Others","China","New Release",false,true,false,"2026-09-25"],
+["The Old Dog (老江湖)","Others","China","New Release",false,true,true,"2026-09-25"],
+["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",false,true,false,"2026-09-25"],
+["Death Whisperer: Saming the Werebeast","M Studio","Thailand","New Release",false,true,true,"2026-09-30"],
+["Linkin Park: Unshatter","Trafalgar/4DPLEX","Global","Concert & Live Event",false,true,true,"2026-09-30"],
+["Reawaken Man: The Red (부활남)","Lotte","Korea","New Release",false,true,true,"2026-09-30"],
+["Verity","Sony","USA","New Release",false,true,false,"2026-09-30"],
+["Mr. & Mrs. Pardon (什么意思夫妇)","Maoyan","China","New Release",false,true,false,"2026-10-01"],
+["Traces of Justice (神探之痕迹)","Maoyan","China","New Release",false,true,false,"2026-10-01"],
+["Star Detective Precure!","TOEI","Japan","New Release",false,true,false,"2026-10-02"],
+["Puella Magi Madoka Magica the Movie -Walpurgisnacht Rising-","Aniplex","Japan","New Release",false,true,false,"2026-10-03"],
+["Other Mommy","Universal","USA","New Release",false,true,false,"2026-10-07"],
+["Wakas at Simula: The Trilogy Concert Finale","4DPLEX","Philippines","Concert & Live Event",false,true,true,"2026-10-07"],
+["Kuasa Gelap: Perjanjian Darah","Paragon Pictures","Indonesia","New Release",false,true,false,"2026-10-08"],
+["Dangerous Cops 1 (Revival)","TOEI","Japan","Revival & Anniversary",false,true,false,"2026-10-09"],
+["Girls und Panzer das Finale: Part 5","HAKUHODO DY Map","Japan","New Release",false,true,false,"2026-10-09"],
+["Bullet Train 2","","Japan","New Release",false,true,true,"2026-10-14"],
+["Guardians of the Video Game (전자오락수호대)","CJ CGV","Korea","New Release",false,true,true,"2026-10-14"],
+["Street Fighter","Paramount","USA","New Release",false,true,true,"2026-10-14"],
+["Whalefall","Disney","USA","New Release",true,true,false,"2026-10-14"],
+["Clayface","WB","USA","New Release",false,true,true,"2026-10-21"],
+["Nakee 3: The Cursed War","M Studio","Thailand","New Release",false,true,false,"2026-10-22"],
+["Attack on Titan: Crimson Bow and Arrow (Revival)","Pony Canyon","Japan","Revival & Anniversary",false,true,true,"2026-10-23"],
+["Lovelive Bloom Garden Party","Bandai Namco","Japan","Concert & Live Event",false,true,false,"2026-10-23"],
+["ME MIN","Vietnam CGV","Vietnam","New Release",false,true,false,"2026-10-23"],
+["Ramayana: Part 1","Others","India","New Release",false,true,true,"2026-11-06"],
+["How to Rob a Bank","Amazon MGM/Sony","USA","New Release",true,true,false,"2026-11-11"],
+["Expelled from Paradise: Resonance from the Heart","TOEI","Japan","New Release",false,true,false,"2026-11-13"],
+["Godzilla Minus Zero","TOHO","Japan","Revival & Anniversary",false,true,false,"2026-11-13"],
+["The Hunger Games: Sunrise on the Reaping","Lionsgate","USA","New Release",false,true,true,"2026-11-18"],
+["Dangerous Cops 2 (Revival)","TOEI","Japan","Revival & Anniversary",false,true,false,"2026-11-27"],
+["Witch on the Holy Night","Aniplex","Japan","New Release",false,true,true,"2026-11-27"],
+["JSB 15th Anniversary Stadium Live \"JSB FOREVER ～ONE～\" THE MOVIE","","Global","Concert & Live Event",false,true,true,"2026-11-27"],
+["Violent Night 2","Universal","USA","New Release",false,true,false,"2026-12-02"],
+["Dangerous Cops 3 (Revival)","TOEI","Japan","Revival & Anniversary",false,true,false,"2026-12-11"],
+["Avengers: Doomsday","Disney","USA","New Release",false,true,true,"2026-12-16"]
 ];
 
 const TITLE_NOTES = {
@@ -558,9 +457,12 @@ const REGION_LABEL = {
 const DATA = RAW.map(r => ({
   title: r[0], studio: r[1], country: r[2],
   region: ORIGIN_TO_REGION[r[2]] || "Other",
-  type: r[3], flat: r[4], fdx: r[5], sx: r[6], date: r[7],
+  type: r[3], flat: r[4],
+  fdx: r[5] === true,   // boolean only — never a status string
+  sx: r[6] === true,    // boolean only — never a status string
+  date: r[7],
   note: TITLE_NOTES[r[0]] || ""
-}));
+})).filter(d => d.fdx || d.sx); // belt-and-braces: drop any row confirmed in neither format
 
 // ---- Login ----
 function attemptLogin() {
@@ -679,14 +581,14 @@ function init() {
     });
   });
 
-  const applicable = s => s === 'Confirmed';
-
+  // Only ever reads the boolean fdx/sx fields — there is no other status
+  // value in the data model that could accidentally render here.
   function formatBadges(d) {
     const parts = [];
-    if ((venue === 'both' || venue === '4dx') && applicable(d.fdx)) {
+    if ((venue === 'both' || venue === '4dx') && d.fdx) {
       parts.push(`<span class="badge b-4dx">4DX</span>`);
     }
-    if ((venue === 'both' || venue === 'sx') && applicable(d.sx)) {
+    if ((venue === 'both' || venue === 'sx') && d.sx) {
       parts.push(`<span class="badge b-sx">SX</span>`);
     }
     return parts.join('');
@@ -700,9 +602,9 @@ function init() {
       if (q && !(d.title.toLowerCase().includes(q) || d.studio.toLowerCase().includes(q))) return false;
       if (selectedRegions.size > 0 && !selectedRegions.has(d.region)) return false;
       if (type && d.type !== type) return false;
-      if (venue === '4dx' && !applicable(d.fdx)) return false;
-      if (venue === 'sx' && !applicable(d.sx)) return false;
-      if (venue === 'both' && !applicable(d.fdx) && !applicable(d.sx)) return false;
+      if (venue === '4dx' && !d.fdx) return false;
+      if (venue === 'sx' && !d.sx) return false;
+      if (venue === 'both' && !d.fdx && !d.sx) return false;
       return true;
     });
 
@@ -718,7 +620,8 @@ function init() {
 
     let currentMonth = "";
     let groupEl = null;
-    rows.forEach(d => {      const m = MONTH_FMT(d.date);
+    rows.forEach(d => {
+      const m = MONTH_FMT(d.date);
       if (m !== currentMonth) {
         currentMonth = m;
         const group = document.createElement('div');
@@ -754,8 +657,6 @@ function init() {
   render();
 
   // ---- Request form ----
-  // Shared as a Claude artifact link, so requests go out via mailto (fetch to
-  // external services like Formspree is blocked by the artifact's network policy).
   const REQUEST_EMAIL = "healin.hwang@cj.net";
 
   document.getElementById('requestToggle').addEventListener('click', () => {
