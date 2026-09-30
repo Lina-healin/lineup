@@ -173,6 +173,11 @@
   .row:hover { background: color-mix(in srgb, var(--bg-raised) 82%, var(--sx) 4%); }
   .row:nth-child(even) { background: var(--bg-row-alt); }
   .row:nth-child(even):hover { background: color-mix(in srgb, var(--bg-row-alt) 82%, var(--sx) 4%); }
+  .row.row-new {
+    background: color-mix(in srgb, var(--warn) 8%, var(--bg));
+    box-shadow: inset 3px 0 0 0 var(--warn);
+  }
+  .row.row-new:hover { background: color-mix(in srgb, var(--warn) 13%, var(--bg)); }
   .cell-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--text-dim); white-space: nowrap; }
   .cell-title { min-width: 0; }
   .cell-title .t { font-size: 0.96rem; font-weight: 600; line-height: 1.3; }
@@ -186,7 +191,6 @@
   .tag.origin-India { color: #C98BD8; border-color: #3d2a4a; }
   .tag.origin-Europe { color: #8FA6C9; border-color: #26344a; }
   .tag.origin-Global { color: #D8C86F; border-color: #4a4324; }
-  .tag.flat { font-style: italic; }
   .title-note {
     margin-top: 7px; font-size: 0.76rem; line-height: 1.45; color: var(--text-dim);
     padding: 6px 8px; border-left: 2px solid var(--warn);
@@ -197,6 +201,14 @@
   .badge { font-size: 0.7rem; font-weight: 600; padding: 5px 8px; border-radius: 5px; text-align: center; min-width: 46px; }
   .badge.b-4dx { background: var(--4dx); color: #fff; }
   .badge.b-sx { background: var(--sx); color: #fff; }
+  .badge-new {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 6px; border-radius: 4px; vertical-align: middle;
+    color: var(--warn);
+    border: 1px solid color-mix(in srgb, var(--warn) 55%, var(--line));
+    background: color-mix(in srgb, var(--warn) 12%, transparent);
+  }
   .empty-state { text-align: center; padding: 60px 16px; color: var(--text-faint); font-size: 0.92rem; }
 
   /* ---------- Request form ---------- */
@@ -302,7 +314,7 @@
       <h1><span class="x4">4DX</span> / <span class="sx">ScreenX</span> Lineup Tracker</h1>
       <span class="who">
         <span id="whoLabel"></span>
-        <span class="updated">Updated on Sep 22, 2026</span>
+        <span class="updated">Updated on Sep 30, 2026</span>
       </span>
     </div>
   </header>
@@ -384,58 +396,69 @@ const CREDENTIALS = {
 // never leak into the UI, even by accident, because there is no string
 // value left for a rendering bug to mis-check against.
 const RAW = [
-["Onslaught","A24","USA","New Release",false,true,false,"2026-09-02"],
-["Cars (2006)","Disney","USA","Revival & Anniversary",false,true,false,"2026-09-04"],
-["Chiikawa: The Secret of Mermaid Island","TOHO","Japan","New Release",false,true,false,"2026-09-05"],
-["Obsession","Universal","USA","New Release",false,true,false,"2026-09-05"],
-["Raiders of the Lost Ark 45th Anniversary","Paramount","USA","Revival & Anniversary",false,true,false,"2026-09-09"],
-["My Tomorrow, Your Yesterday (我想留在你身边)","Others","China","New Release",false,true,false,"2026-09-12"],
-["Resident Evil (2026)","Sony","USA","New Release",false,true,true,"2026-09-16"],
-["Transformers (40th Anniversary)","Paramount","USA","Revival & Anniversary",false,true,false,"2026-09-16"],
-["Terbang","Astro Shaw","Malaysia","New Release",false,true,false,"2026-09-17"],
-["Cosmic Princess Kaguya!","Others","Japan","New Release",false,true,true,"2026-09-18"],
-["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",false,true,false,"2026-09-19"],
-["Avengers ENDGAME (2026 re-release)","Disney","USA","Revival & Anniversary",false,true,true,"2026-09-23"],
-["Forgotten Island","Universal","USA","New Release",false,true,true,"2026-09-23"],
-["Heart of the Beast","Others","USA","New Release",false,true,false,"2026-09-23"],
-["Trai Buon Nguoi (The Human Animal Camp)","Galaxy","Vietnam","New Release",false,true,false,"2026-09-24"],
-["No Go: The Child (死亡禁区实录)","Others","China","New Release",false,true,false,"2026-09-25"],
-["The Old Dog (老江湖)","Others","China","New Release",false,true,true,"2026-09-25"],
-["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",false,true,false,"2026-09-25"],
-["Death Whisperer: Saming the Werebeast","M Studio","Thailand","New Release",false,true,true,"2026-09-30"],
-["Linkin Park: Unshatter","Trafalgar/4DPLEX","Global","Concert & Live Event",false,true,true,"2026-09-30"],
-["Reawaken Man: The Red (부활남)","Lotte","Korea","New Release",false,true,true,"2026-09-30"],
-["Verity","Sony","USA","New Release",false,true,false,"2026-09-30"],
-["Mr. & Mrs. Pardon (什么意思夫妇)","Maoyan","China","New Release",false,true,false,"2026-10-01"],
-["Traces of Justice (神探之痕迹)","Maoyan","China","New Release",false,true,false,"2026-10-01"],
-["Star Detective Precure!","TOEI","Japan","New Release",false,true,false,"2026-10-02"],
-["Puella Magi Madoka Magica the Movie -Walpurgisnacht Rising-","Aniplex","Japan","New Release",false,true,false,"2026-10-03"],
-["Other Mommy","Universal","USA","New Release",false,true,false,"2026-10-07"],
-["Wakas at Simula: The Trilogy Concert Finale","4DPLEX","Philippines","Concert & Live Event",false,true,true,"2026-10-07"],
-["Kuasa Gelap: Perjanjian Darah","Paragon Pictures","Indonesia","New Release",false,true,false,"2026-10-08"],
-["Dangerous Cops 1 (Revival)","TOEI","Japan","Revival & Anniversary",false,true,false,"2026-10-09"],
-["Girls und Panzer das Finale: Part 5","HAKUHODO DY Map","Japan","New Release",false,true,false,"2026-10-09"],
-["Bullet Train 2","","Japan","New Release",false,true,true,"2026-10-14"],
-["Guardians of the Video Game (전자오락수호대)","CJ CGV","Korea","New Release",false,true,true,"2026-10-14"],
-["Street Fighter","Paramount","USA","New Release",false,true,true,"2026-10-14"],
-["Whalefall","Disney","USA","New Release",true,true,false,"2026-10-14"],
-["Clayface","WB","USA","New Release",false,true,true,"2026-10-21"],
-["Nakee 3: The Cursed War","M Studio","Thailand","New Release",false,true,false,"2026-10-22"],
-["Attack on Titan: Crimson Bow and Arrow (Revival)","Pony Canyon","Japan","Revival & Anniversary",false,true,true,"2026-10-23"],
-["Lovelive Bloom Garden Party","Bandai Namco","Japan","Concert & Live Event",false,true,false,"2026-10-23"],
-["ME MIN","Vietnam CGV","Vietnam","New Release",false,true,false,"2026-10-23"],
-["Ramayana: Part 1","Others","India","New Release",false,true,true,"2026-11-06"],
-["How to Rob a Bank","Amazon MGM/Sony","USA","New Release",true,true,false,"2026-11-11"],
-["Expelled from Paradise: Resonance from the Heart","TOEI","Japan","New Release",false,true,false,"2026-11-13"],
-["Godzilla Minus Zero","TOHO","Japan","Revival & Anniversary",false,true,false,"2026-11-13"],
-["The Hunger Games: Sunrise on the Reaping","Lionsgate","USA","New Release",false,true,true,"2026-11-18"],
-["Dangerous Cops 2 (Revival)","TOEI","Japan","Revival & Anniversary",false,true,false,"2026-11-27"],
-["Witch on the Holy Night","Aniplex","Japan","New Release",false,true,true,"2026-11-27"],
-["JSB 15th Anniversary Stadium Live \"JSB FOREVER ～ONE～\" THE MOVIE","","Global","Concert & Live Event",false,true,true,"2026-11-27"],
-["Violent Night 2","Universal","USA","New Release",false,true,false,"2026-12-02"],
-["Dangerous Cops 3 (Revival)","TOEI","Japan","Revival & Anniversary",false,true,false,"2026-12-11"],
-["Avengers: Doomsday","Disney","USA","New Release",false,true,true,"2026-12-16"]
+["Onslaught","A24","USA","New Release",true,false,"2026-09-02"],
+["Cars (2006)","Disney","USA","Revival & Anniversary",true,false,"2026-09-04"],
+["Chiikawa: The Secret of Mermaid Island","TOHO","Japan","New Release",true,false,"2026-09-05"],
+["Obsession","Universal","USA","New Release",true,false,"2026-09-05"],
+["Raiders of the Lost Ark 45th Anniversary","Paramount","USA","Revival & Anniversary",true,false,"2026-09-09"],
+["My Tomorrow, Your Yesterday (我想留在你身边)","Others","China","New Release",true,false,"2026-09-12"],
+["Resident Evil (2026)","Sony","USA","New Release",true,true,"2026-09-16"],
+["Transformers (40th Anniversary)","Paramount","USA","Revival & Anniversary",true,false,"2026-09-16"],
+["Terbang","Astro Shaw","Malaysia","New Release",true,false,"2026-09-17"],
+["Cosmic Princess Kaguya!","Others","Japan","New Release",true,true,"2026-09-18"],
+["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",true,false,"2026-09-19"],
+["Avengers ENDGAME (2026 re-release)","Disney","USA","Revival & Anniversary",true,true,"2026-09-23"],
+["Forgotten Island","Universal","USA","New Release",true,true,"2026-09-23"],
+["Heart of the Beast","Others","USA","New Release",true,false,"2026-09-23"],
+["Trai Buon Nguoi (The Human Animal Camp)","Galaxy","Vietnam","New Release",true,false,"2026-09-24"],
+["No Go: The Child (死亡禁区实录)","Others","China","New Release",true,false,"2026-09-25"],
+["The Old Dog (老江湖)","Others","China","New Release",true,true,"2026-09-25"],
+["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",true,false,"2026-09-25"],
+["Death Whisperer: Saming the Werebeast","M Studio","Thailand","New Release",true,true,"2026-09-30"],
+["Linkin Park: Unshatter","Trafalgar/4DPLEX","Global","Concert & Live Event",true,true,"2026-09-30"],
+["Reawaken Man: The Red (부활남)","Lotte","Korea","New Release",true,true,"2026-09-30"],
+["Verity","Sony","USA","New Release",true,false,"2026-09-30"],
+["Mr. & Mrs. Pardon (什么意思夫妇)","Maoyan","China","New Release",true,false,"2026-10-01"],
+["Traces of Justice (神探之痕迹)","Maoyan","China","New Release",true,false,"2026-10-01"],
+["Star Detective Precure!","TOEI","Japan","New Release",true,false,"2026-10-02"],
+["Puella Magi Madoka Magica the Movie -Walpurgisnacht Rising-","Aniplex","Japan","New Release",true,false,"2026-10-03"],
+["Other Mommy","Universal","USA","New Release",true,false,"2026-10-07"],
+["Wakas at Simula: The Trilogy Concert Finale","4DPLEX","Philippines","Concert & Live Event",true,true,"2026-10-07"],
+["Kuasa Gelap: Perjanjian Darah","Paragon Pictures","Indonesia","New Release",true,false,"2026-10-08"],
+["Dangerous Cops 1 (Revival)","TOEI","Japan","Revival & Anniversary",true,false,"2026-10-09"],
+["Girls und Panzer das Finale: Part 5","HAKUHODO DY Map","Japan","New Release",true,false,"2026-10-09"],
+["Bullet Train 2","","Japan","New Release",true,true,"2026-10-14"],
+["Guardians of the Video Game (전자오락수호대)","CJ CGV","Korea","New Release",true,true,"2026-10-14"],
+["Street Fighter","Paramount","USA","New Release",true,true,"2026-10-14"],
+["Whalefall","Disney","USA","New Release",true,false,"2026-10-14"],
+["Clayface","WB","USA","New Release",true,true,"2026-10-21"],
+["Nakee 3: The Cursed War","M Studio","Thailand","New Release",true,false,"2026-10-22"],
+["Attack on Titan: Crimson Bow and Arrow (Revival)","Pony Canyon","Japan","Revival & Anniversary",true,true,"2026-10-23"],
+["Lovelive Bloom Garden Party","Bandai Namco","Japan","Concert & Live Event",true,false,"2026-10-23"],
+["ME MIN","Vietnam CGV","Vietnam","New Release",true,false,"2026-10-23"],
+["Ramayana: Part 1","Others","India","New Release",true,true,"2026-11-06"],
+["How to Rob a Bank","Amazon MGM/Sony","USA","New Release",true,false,"2026-11-11"],
+["Expelled from Paradise: Resonance from the Heart","TOEI","Japan","New Release",true,false,"2026-11-13"],
+["Godzilla Minus Zero","TOHO","Japan","Revival & Anniversary",true,false,"2026-11-13"],
+["The Hunger Games: Sunrise on the Reaping","Lionsgate","USA","New Release",true,true,"2026-11-18"],
+["Dangerous Cops 2 (Revival)","TOEI","Japan","Revival & Anniversary",true,false,"2026-11-27"],
+["Witch on the Holy Night","Aniplex","Japan","New Release",true,true,"2026-11-27"],
+["JSB 15th Anniversary Stadium Live \"JSB FOREVER ～ONE～\" THE MOVIE","","Global","Concert & Live Event",true,true,"2026-11-27"],
+["Violent Night 2","Universal","USA","New Release",true,false,"2026-12-02"],
+["Dangerous Cops 3 (Revival)","TOEI","Japan","Revival & Anniversary",true,false,"2026-12-11"],
+["Avengers: Doomsday","Disney","USA","New Release",true,true,"2026-12-16"],
+["Wildwood","Others","USA","New Release",true,false,"2026-10-21"],
+["Hexed","Disney","USA","New Release",true,false,"2026-11-23"]
 ];
+
+// Titles newly confirmed on a given update — shows a NEW badge for 14 days
+// from that date, then disappears automatically (checked against the
+// viewer's real current date, so this works fine as a static GitHub page).
+const NEW_ADDED = {
+  "Wildwood": "2026-09-30",
+  "Hexed": "2026-09-30"
+};
+const NEW_BADGE_DAYS = 14;
 
 const TITLE_NOTES = {
   "Attack on Titan: Crimson Bow and Arrow (Revival)":
@@ -457,10 +480,10 @@ const REGION_LABEL = {
 const DATA = RAW.map(r => ({
   title: r[0], studio: r[1], country: r[2],
   region: ORIGIN_TO_REGION[r[2]] || "Other",
-  type: r[3], flat: r[4],
-  fdx: r[5] === true,   // boolean only — never a status string
-  sx: r[6] === true,    // boolean only — never a status string
-  date: r[7],
+  type: r[3],
+  fdx: r[4] === true,   // boolean only — never a status string
+  sx: r[5] === true,    // boolean only — never a status string
+  date: r[6],
   note: TITLE_NOTES[r[0]] || ""
 })).filter(d => d.fdx || d.sx); // belt-and-braces: drop any row confirmed in neither format
 
@@ -571,6 +594,13 @@ function init() {
 
   const regionClassMap = { Hollywood: "origin-Hollywood", Japan: "origin-Japan", Korea: "origin-Korea", China: "origin-China", SEA: "origin-SEA", India: "origin-India", Europe: "origin-Europe", Global: "origin-Global" };
 
+  function isNew(title) {
+    const addedOn = NEW_ADDED[title];
+    if (!addedOn) return false;
+    const days = (new Date() - new Date(addedOn + "T00:00:00")) / 86400000;
+    return days >= 0 && days <= NEW_BADGE_DAYS;
+  }
+
   let venue = 'both';
   document.querySelectorAll('.venue-seg button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -631,15 +661,14 @@ function init() {
         groupEl = group;
       }
       const row = document.createElement('div');
-      row.className = 'row';
+      row.className = 'row' + (isNew(d.title) ? ' row-new' : '');
       row.innerHTML = `
         <div class="cell-date">${DATE_FMT(d.date)}</div>
         <div class="cell-title">
-          <div class="t" data-date="${DATE_FMT(d.date)}">${d.title}</div>
+          <div class="t" data-date="${DATE_FMT(d.date)}">${d.title}${isNew(d.title) ? ' <span class="badge-new">NEW</span>' : ''}</div>
           <div class="meta">
             <span class="tag ${regionClassMap[d.region] || ''}">${d.country}</span>
             <span class="tag">${d.type}</span>
-            ${d.flat ? '<span class="tag flat">also releasing flat/2D</span>' : ''}
           </div>
           ${d.note ? `<div class="title-note">${d.note}</div>` : ''}
         </div>
