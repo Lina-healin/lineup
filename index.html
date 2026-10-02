@@ -220,6 +220,11 @@
     background: color-mix(in srgb, var(--warn) 7%, transparent); border-radius: 0 5px 5px 0;
   }
   .title-note strong { color: var(--warn); font-weight: 600; }
+  .tag.ratio-flat {
+    color: #211705; background: var(--warn); border-color: var(--warn);
+    font-weight: 700; font-size: 0.7rem; padding: 3px 8px;
+  }
+  .tag.ratio-flat .ratio-flat-icon { font-size: 0.62em; }
   .badge-pair { display: flex; gap: 5px; justify-self: end; }
   .badge { font-size: 0.7rem; font-weight: 600; padding: 5px 8px; border-radius: 5px; text-align: center; min-width: 46px; }
   .badge.b-4dx { background: var(--4dx); color: #fff; }
@@ -419,6 +424,7 @@ const CREDENTIALS = {
 // never leak into the UI, even by accident, because there is no string
 // value left for a rendering bug to mis-check against.
 const RAW = [
+["OK! Madam: Bon Voyage (오케이 마담 2)","CJ CGV","Korea","New Release",true,true,"2026-08-12"],
 ["Onslaught","A24","USA","New Release",true,false,"2026-09-02"],
 ["Cars (2006)","Disney","USA","Revival & Anniversary",true,false,"2026-09-04"],
 ["Chiikawa: The Secret of Mermaid Island","TOHO","Japan","New Release",true,false,"2026-09-05"],
@@ -427,6 +433,7 @@ const RAW = [
 ["My Tomorrow, Your Yesterday (我想留在你身边)","Others","China","New Release",true,false,"2026-09-12"],
 ["Resident Evil (2026)","Sony","USA","New Release",true,true,"2026-09-16"],
 ["Transformers (40th Anniversary)","Paramount","USA","Revival & Anniversary",true,false,"2026-09-16"],
+["The Intern (인턴)","WB","Korea","New Release",false,true,"2026-09-16"],
 ["Terbang","Astro Shaw","Malaysia","New Release",true,false,"2026-09-17"],
 ["Cosmic Princess Kaguya!","Others","Japan","New Release",true,true,"2026-09-18"],
 ["The Red-Clothed Bride (红衣新娘)","Others","China","New Release",true,false,"2026-09-19"],
@@ -470,6 +477,7 @@ const RAW = [
 ["Violent Night 2","Universal","USA","New Release",true,false,"2026-12-02"],
 ["Dangerous Cops 3 (Revival)","TOEI","Japan","Revival & Anniversary",true,false,"2026-12-11"],
 ["Avengers: Doomsday","Disney","USA","New Release",true,true,"2026-12-16"],
+["Once upon a time in the middle east (欢迎来龙餐馆)","Others","China","New Release",true,true,"2026-08-11"],
 ["Wildwood","Others","USA","New Release",true,false,"2026-10-21"],
 ["Hexed","Disney","USA","New Release",true,false,"2026-11-23"]
 ];
@@ -479,9 +487,21 @@ const RAW = [
 // viewer's real current date, so this works fine as a static GitHub page).
 const NEW_ADDED = {
   "Wildwood": "2026-09-30",
-  "Hexed": "2026-09-30"
+  "Hexed": "2026-09-30",
+  "OK! Madam: Bon Voyage (오케이 마담 2)": "2026-09-30",
+  "The Intern (인턴)": "2026-09-30",
+  "Once upon a time in the middle east (欢迎来龙餐馆)": "2026-09-30"
 };
 const NEW_BADGE_DAYS = 14;
+
+// Aspect ratio: Flat. Flagged separately because some venues cannot project
+// Flat-ratio prints, so this needs to stand out as a screening-compatibility
+// warning — not to be confused with the removed "also releasing flat/2D" field.
+const RATIO_FLAT = new Set([
+  "Guardians of the Video Game (전자오락수호대)",
+  "The Intern (인턴)",
+  "Once upon a time in the middle east (欢迎来龙餐馆)"
+]);
 
 const TITLE_NOTES = {
   "Attack on Titan: Crimson Bow and Arrow (Revival)":
@@ -722,6 +742,7 @@ function init() {
           <div class="meta">
             <span class="tag ${regionClassMap[d.region] || ''}">${d.country}</span>
             <span class="tag">${d.type}</span>
+            ${RATIO_FLAT.has(d.title) ? '<span class="tag ratio-flat"><span class="ratio-flat-icon">⚠</span> Flat ratio</span>' : ''}
           </div>
           ${d.note ? `<div class="title-note">${d.note}</div>` : ''}
         </div>
