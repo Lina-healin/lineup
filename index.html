@@ -220,6 +220,7 @@
     background: color-mix(in srgb, var(--warn) 7%, transparent); border-radius: 0 5px 5px 0;
   }
   .title-note strong { color: var(--warn); font-weight: 600; }
+  .title-note s { color: var(--text-faint); text-decoration: line-through; text-decoration-thickness: 1.5px; }
   .tag.ratio-flat {
     color: #211705; background: var(--warn); border-color: var(--warn);
     font-weight: 700; font-size: 0.7rem; padding: 3px 8px;
@@ -342,7 +343,7 @@
       <h1><span class="x4">4DX</span> / <span class="sx">ScreenX</span> Lineup Tracker</h1>
       <span class="who">
         <span id="whoLabel"></span>
-        <span class="updated">Updated on Oct 6, 2026</span>
+        <span class="updated">Updated on Oct 7, 2026</span>
       </span>
     </div>
   </header>
@@ -469,7 +470,7 @@ const RAW = [
 ["Ramayana: Part 1","Others","India","New Release",true,true,"2026-11-06"],
 ["How to Rob a Bank","Amazon MGM/Sony","USA","New Release",true,false,"2026-11-11"],
 ["Expelled from Paradise: Resonance from the Heart","TOEI","Japan","New Release",true,false,"2026-11-13"],
-["Godzilla Minus Zero","TOHO","Japan","Revival & Anniversary",true,false,"2026-11-13"],
+["Godzilla Minus Zero","TOHO","Japan","New Release",true,false,"2026-11-06"],
 ["The Hunger Games: Sunrise on the Reaping","Lionsgate","USA","New Release",true,true,"2026-11-18"],
 ["Dangerous Cops 2 (Revival)","TOEI","Japan","Revival & Anniversary",true,false,"2026-11-27"],
 ["Witch on the Holy Night","Aniplex","Japan","New Release",true,true,"2026-11-27"],
@@ -480,6 +481,7 @@ const RAW = [
 ["Once upon a time in the middle east (欢迎来龙餐馆)","Others","China","New Release",true,true,"2026-08-11"],
 ["The Cat in the Hat","WB","USA","New Release",true,false,"2026-11-04"],
 ["Ebenezer","Paramount","USA","New Release",true,false,"2026-11-11"],
+["Dune: Part Three","WB","USA","New Release",true,false,"2026-12-16"],
 ["Wildwood","Others","USA","New Release",true,false,"2026-10-21"],
 ["Hexed","Disney","USA","New Release",true,false,"2026-11-23"]
 ];
@@ -494,7 +496,8 @@ const NEW_ADDED = {
   "The Intern (인턴)": "2026-09-30",
   "Once upon a time in the middle east (欢迎来龙餐馆)": "2026-09-30",
   "The Cat in the Hat": "2026-10-06",
-  "Ebenezer": "2026-10-06"
+  "Ebenezer": "2026-10-06",
+  "Dune: Part Three": "2026-10-07"
 };
 const NEW_BADGE_DAYS = 14;
 
@@ -511,7 +514,7 @@ const TITLE_NOTES = {
   "Attack on Titan: Crimson Bow and Arrow (Revival)":
     "<strong>Note:</strong> Available in 4DX, ScreenX, and 2D from October 23. A separate 4DX Enhanced Version code is also available. If there is exhibitor interest in a market without a local distributor, we can connect you with the Japanese distributor.",
   "Godzilla Minus Zero":
-    "<strong>Note:</strong> 4DX release is available from Nov 13."
+    "<s>4DX release is available from Nov 13.</s><br><strong>Update:</strong> Now confirmed to open day-and-date with the general release — 4DX available from Nov 6."
 };
 
 const ORIGIN_TO_REGION = {
