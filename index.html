@@ -649,9 +649,21 @@ function init() {
   // Pinned at the top of November: a global re-release rolling out market by
   // market, so no single release date applies — shown as a special card
   // instead of a normal dated row.
-  const NOVEMBER_LABEL = MONTH_FMT("2026-11-01");
   NEW_ADDED["DUNE_CARD"] = "2026-09-30";
-  const DUNE_CARD_HTML = `
+  const DUNE_FILMS = [
+    { title: "Dune: Part One", studio: "WB", region: "Hollywood", type: "Revival & Anniversary", fdx: true, sx: false },
+    { title: "Dune: Part Two", studio: "WB", region: "Hollywood", type: "Revival & Anniversary", fdx: true, sx: true }
+  ];
+
+  // Card content follows the same venue tab / search / region / type filters
+  // as normal rows, so it only lists films that match the current view.
+  function buildDuneCard(films) {
+    const filmsHtml = films.map(f => `
+        <div class="dune-film">
+          <span class="dune-film-title">${f.title}</span>
+          <span class="badge-pair">${formatBadges(f)}</span>
+        </div>`).join('');
+    return `
     <div class="dune-card">
       <div class="dune-card-head">
         <span>DUNE: PART ONE &amp; PART TWO — GLOBAL RE-RELEASE</span>
@@ -659,21 +671,14 @@ function init() {
       </div>
       <div class="dune-card-sub">Rolling out through November — exact date varies by market.</div>
       <div class="title-note"><strong>Recommended scheduling window:</strong> week of Oct 28 – week of Nov 11.</div>
-      <div class="dune-card-films">
-        <div class="dune-film">
-          <span class="dune-film-title">Dune: Part One</span>
-          <span class="badge-pair"><span class="badge b-4dx">4DX</span></span>
-        </div>
-        <div class="dune-film">
-          <span class="dune-film-title">Dune: Part Two</span>
-          <span class="badge-pair"><span class="badge b-4dx">4DX</span><span class="badge b-sx">SX</span></span>
-        </div>
+      <div class="dune-card-films">${filmsHtml}
       </div>
       <div class="dune-card-tags">
         <span class="tag origin-Global">Global</span>
         <span class="tag">Revival &amp; Anniversary</span>
       </div>
     </div>`;
+  }
 
   function isNew(title) {
     const addedOn = NEW_ADDED[title];
@@ -709,7 +714,7 @@ function init() {
     const q = document.getElementById('searchInput').value.trim().toLowerCase();
     const type = typeSel.value;
 
-    let rows = DATA.filter(d => {
+    const matches = d => {
       if (q && !(d.title.toLowerCase().includes(q) || d.studio.toLowerCase().includes(q))) return false;
       if (selectedRegions.size > 0 && !selectedRegions.has(d.region)) return false;
       if (type && d.type !== type) return false;
@@ -717,7 +722,14 @@ function init() {
       if (venue === 'sx' && !d.sx) return false;
       if (venue === 'both' && !d.fdx && !d.sx) return false;
       return true;
-    });
+    };
+
+    let rows = DATA.filter(matches);
+
+    // Special Dune card: sorted to the very top of November (2026-11-01 is
+    // internal only and never displayed), shown whenever any film matches.
+    const duneFilms = DUNE_FILMS.filter(matches);
+    if (duneFilms.length) rows.push({ special: 'dune', date: '2026-11-01', films: duneFilms });
 
     rows.sort((a, b) => a.date.localeCompare(b.date));
 
@@ -737,10 +749,13 @@ function init() {
         currentMonth = m;
         const group = document.createElement('div');
         group.className = 'month-group';
-        group.innerHTML = `<div class="month-heading">${m.toUpperCase()}</div>` +
-          (m === NOVEMBER_LABEL ? DUNE_CARD_HTML : '');
+        group.innerHTML = `<div class="month-heading">${m.toUpperCase()}</div>`;
         main.appendChild(group);
         groupEl = group;
+      }
+      if (d.special === 'dune') {
+        groupEl.insertAdjacentHTML('beforeend', buildDuneCard(d.films));
+        return;
       }
       const row = document.createElement('div');
       row.className = 'row' + (isNew(d.title) ? ' row-new' : '');
